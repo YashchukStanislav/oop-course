@@ -1,33 +1,72 @@
 ﻿using ClinicApp;
 
-Patient p1 = new Patient("Іван", "Петренко", DateTime.Today.AddYears(-41), "A+", "0501234567");
-Patient p2 = new Patient("Олена", "Коваль", DateTime.Today.AddYears(-33), "B-", "0672345678");
-Patient p3 = new Patient("Максим", "Бойко", DateTime.Today.AddYears(-16), "O+", "0933456789");
-Patient p4 = new Patient("Невідомий", "Пацієнт");
-Patient p5 = new Patient();
+PatientManager patientManager = new PatientManager();
 
-Console.WriteLine(p1);
-Console.WriteLine(p2);
-Console.WriteLine(p3);
-Console.WriteLine(p4);
-Console.WriteLine(p5);
+patientManager.Add(new Patient("Іван", "Петренко", DateTime.Today.AddYears(-41), "A+", "0501234567"));
+patientManager.Add(new Patient("Олена", "Коваль", DateTime.Today.AddYears(-33), "B-", "0672345678"));
+patientManager.Add(new Patient("Максим", "Бойко", DateTime.Today.AddYears(-16), "O+", "0933456789"));
+patientManager.Add(new Patient("Марія", "Ткач"));
 
-Console.WriteLine("\n=== Лікарі ===");
+RunPatientMenu(patientManager);
 
-Doctor doc1 = new Doctor("Олег", "Сидоренко", "Кардіологія", "LIC-001", "0441234567");
-doc1.WorkEndHour = 16; 
+void RunPatientMenu(PatientManager manager)
+{
+    bool exit = false;
+    while (!exit)
+    {
+        Console.WriteLine("\n--- Підменю: Пацієнти ---");
+        Console.WriteLine("1. Показати всіх");
+        Console.WriteLine("2. Додати пацієнта");
+        Console.WriteLine("3. Знайти за ім'ям");
+        Console.WriteLine("4. Видалити за ID");
+        Console.WriteLine("5. Статистика");
+        Console.WriteLine("0. Вихід");
+        Console.Write("Оберіть опцію: ");
 
-Doctor doc2 = new Doctor("Наталія", "Мороз", "Неврологія");
-doc2.LicenseNumber = "LIC-002";
-doc2.Phone = "0442345678";
-doc2.WorkStartHour = 9;
-doc2.WorkEndHour = 18;
+        string? choice = Console.ReadLine();
+        Console.WriteLine();
 
-Doctor doc3 = new Doctor("Андрій", "Власенко", "Педіатрія", "LIC-003", "0443456789");
-
-Doctor doc4 = new Doctor();
-
-Console.WriteLine(doc1);
-Console.WriteLine(doc2);
-Console.WriteLine(doc3);
-Console.WriteLine(doc4);
+        switch (choice)
+        {
+            case "1":
+                manager.DisplayAll();
+                break;
+            case "2":
+                Console.Write("Ім'я: ");
+                string firstName = Console.ReadLine() ?? "";
+                Console.Write("Прізвище: ");
+                string lastName = Console.ReadLine() ?? "";
+                manager.Add(new Patient(firstName, lastName));
+                break;
+            case "3":
+                Console.Write("Введіть ім'я або прізвище для пошуку: ");
+                string searchName = Console.ReadLine() ?? "";
+                Patient[] found = manager.FindByName(searchName);
+                Console.WriteLine($"Знайдено ({found.Length}):");
+                foreach (var p in found)
+                {
+                    Console.WriteLine(p);
+                }
+                break;
+            case "4":
+                Console.Write("Введіть ID для видалення: ");
+                if (int.TryParse(Console.ReadLine(), out int id))
+                {
+                    if (manager.Remove(id))
+                        Console.WriteLine("Пацієнта успішно видалено.");
+                    else
+                        Console.WriteLine("Пацієнта з таким ID не знайдено.");
+                }
+                break;
+            case "5":
+                manager.DisplayStats();
+                break;
+            case "0":
+                exit = true;
+                break;
+            default:
+                Console.WriteLine("Невірний вибір.");
+                break;
+        }
+    }
+}
