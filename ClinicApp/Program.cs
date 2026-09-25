@@ -1,34 +1,29 @@
 ﻿using ClinicApp;
 
-PatientManager patientManager = new PatientManager();
-DoctorManager doctorManager = new DoctorManager();
+Clinic clinic = new Clinic("Медична Клініка");
 
-patientManager.Add(new Patient("Іван", "Петренко", DateTime.Today.AddYears(-41), "A+", "0501234567"));
-patientManager.Add(new Patient("Олена", "Коваль", DateTime.Today.AddYears(-33), "B-", "0672345678"));
-patientManager.Add(new Patient("Максим", "Бойко", DateTime.Today.AddYears(-16), "O+", "0933456789"));
+// Початкове наповнення даними через clinic
+clinic.Patients.Add(new Patient("Іван", "Петренко", DateTime.Today.AddYears(-41), "A+", "0501234567"));
+clinic.Patients.Add(new Patient("Олена", "Коваль", DateTime.Today.AddYears(-33), "B-", "0672345678"));
+clinic.Patients.Add(new Patient("Максим", "Бойко", DateTime.Today.AddYears(-16), "O+", "0933456789"));
 
-Doctor doc1 = new Doctor("Олег", "Сидоренко", "Кардіологія", "LIC-001", "0441234567");
-Doctor doc2 = new Doctor("Наталія", "Мороз", "Неврологія", "LIC-002", "0442345678");
-Doctor doc3 = new Doctor("Андрій", "Власенко", "Педіатрія", "LIC-003", "0443456789");
+clinic.Doctors.Add(new Doctor("Олег", "Сидоренко", "Кардіологія", "LIC-001", "0441234567"));
+clinic.Doctors.Add(new Doctor("Наталія", "Мороз", "Неврологія", "LIC-002", "0442345678"));
+clinic.Doctors.Add(new Doctor("Андрій", "Власенко", "Педіатрія", "LIC-003", "0443456789"));
 
-doctorManager.Add(doc1);
-doctorManager.Add(doc2);
-doctorManager.Add(doc3);
-
-AppointmentManager appointmentManager = new AppointmentManager(patientManager, doctorManager);
-
-appointmentManager.Book(1, 1, new DateTime(2026, 5, 9, 10, 0, 0), 30);
-appointmentManager.Book(2, 2, new DateTime(2026, 5, 9, 11, 0, 0), 45);
-appointmentManager.Book(3, 3, new DateTime(2026, 5, 10, 9, 0, 0), 20);
-appointmentManager.Book(99, 1, new DateTime(2026, 5, 10, 10, 0, 0));
+clinic.Appointments.Book(1, 1, new DateTime(2026, 5, 9, 10, 0, 0), 30);
+clinic.Appointments.Book(2, 2, new DateTime(2026, 5, 9, 11, 0, 0), 45);
+clinic.Appointments.Book(3, 3, new DateTime(2026, 5, 10, 9, 0, 0), 20);
 
 bool mainExit = false;
 while (!mainExit)
 {
-    Console.WriteLine("\n=== МЕНЕДЖЕР КЛІНІКИ ===");
+    Console.WriteLine($"\n=== ГОЛОВНЕ МЕНЮ: {clinic.Name.ToUpper()} ===");
     Console.WriteLine("1. Керування пацієнтами");
     Console.WriteLine("2. Керування лікарями");
     Console.WriteLine("3. Керування записами");
+    Console.WriteLine("4. Переглянути розклад на дату");
+    Console.WriteLine("5. Згенерувати звіт клініки");
     Console.WriteLine("0. Вихід");
     Console.Write("Оберіть розділ: ");
 
@@ -38,13 +33,27 @@ while (!mainExit)
     switch (choice)
     {
         case "1":
-            RunPatientMenu(patientManager);
+            RunPatientMenu(clinic);
             break;
         case "2":
-            RunDoctorMenu(doctorManager);
+            RunDoctorMenu(clinic);
             break;
         case "3":
-            RunAppointmentMenu(appointmentManager, patientManager, doctorManager);
+            RunAppointmentMenu(clinic);
+            break;
+        case "4":
+            Console.Write("Введіть дату (рррр-мм-дд або дд.мм.рррр): ");
+            if (DateTime.TryParse(Console.ReadLine(), out DateTime date))
+            {
+                clinic.DisplaySchedule(date);
+            }
+            else
+            {
+                Console.WriteLine("Невірний формат дати.");
+            }
+            break;
+        case "5":
+            clinic.GenerateReport();
             break;
         case "0":
             mainExit = true;
@@ -55,7 +64,7 @@ while (!mainExit)
     }
 }
 
-void RunPatientMenu(PatientManager manager)
+void RunPatientMenu(Clinic clinic)
 {
     bool exit = false;
     while (!exit)
@@ -75,19 +84,19 @@ void RunPatientMenu(PatientManager manager)
         switch (choice)
         {
             case "1":
-                manager.DisplayAll();
+                clinic.Patients.DisplayAll();
                 break;
             case "2":
                 Console.Write("Ім'я: ");
                 string firstName = Console.ReadLine() ?? "";
                 Console.Write("Прізвище: ");
                 string lastName = Console.ReadLine() ?? "";
-                manager.Add(new Patient(firstName, lastName));
+                clinic.Patients.Add(new Patient(firstName, lastName));
                 break;
             case "3":
-                Console.Write("Введіть ім'я або прізвище для пошуку: ");
+                Console.Write("Введіть ім'я або прізвище: ");
                 string searchName = Console.ReadLine() ?? "";
-                Patient[] found = manager.FindByName(searchName);
+                Patient[] found = clinic.Patients.FindByName(searchName);
                 Console.WriteLine($"Знайдено ({found.Length}):");
                 foreach (var p in found)
                 {
@@ -98,14 +107,14 @@ void RunPatientMenu(PatientManager manager)
                 Console.Write("Введіть ID для видалення: ");
                 if (int.TryParse(Console.ReadLine(), out int id))
                 {
-                    if (manager.Remove(id))
+                    if (clinic.Patients.Remove(id))
                         Console.WriteLine("Пацієнта успішно видалено.");
                     else
-                        Console.WriteLine("Пацієнта з таким ID не знайдено.");
+                        Console.WriteLine("Пацієнта не знайдено.");
                 }
                 break;
             case "5":
-                manager.DisplayStats();
+                clinic.Patients.DisplayStats();
                 break;
             case "0":
                 exit = true;
@@ -117,7 +126,7 @@ void RunPatientMenu(PatientManager manager)
     }
 }
 
-void RunDoctorMenu(DoctorManager manager)
+void RunDoctorMenu(Clinic clinic)
 {
     bool exit = false;
     while (!exit)
@@ -137,7 +146,7 @@ void RunDoctorMenu(DoctorManager manager)
         switch (choice)
         {
             case "1":
-                manager.DisplayAll();
+                clinic.Doctors.DisplayAll();
                 break;
             case "2":
                 Console.Write("Ім'я: ");
@@ -146,12 +155,12 @@ void RunDoctorMenu(DoctorManager manager)
                 string lastName = Console.ReadLine() ?? "";
                 Console.Write("Спеціальність: ");
                 string speciality = Console.ReadLine() ?? "";
-                manager.Add(new Doctor(firstName, lastName, speciality));
+                clinic.Doctors.Add(new Doctor(firstName, lastName, speciality));
                 break;
             case "3":
-                Console.Write("Введіть спеціальність для пошуку: ");
+                Console.Write("Введіть спеціальність: ");
                 string searchSpec = Console.ReadLine() ?? "";
-                Doctor[] found = manager.FindBySpeciality(searchSpec);
+                Doctor[] found = clinic.Doctors.FindBySpeciality(searchSpec);
                 Console.WriteLine($"Знайдено ({found.Length}):");
                 foreach (var d in found)
                 {
@@ -162,14 +171,14 @@ void RunDoctorMenu(DoctorManager manager)
                 Console.Write("Введіть ID для видалення: ");
                 if (int.TryParse(Console.ReadLine(), out int id))
                 {
-                    if (manager.Remove(id))
+                    if (clinic.Doctors.Remove(id))
                         Console.WriteLine("Лікаря успішно видалено.");
                     else
-                        Console.WriteLine("Лікаря з таким ID не знайдено.");
+                        Console.WriteLine("Лікаря не знайдено.");
                 }
                 break;
             case "5":
-                manager.DisplayStats();
+                clinic.Doctors.DisplayStats();
                 break;
             case "0":
                 exit = true;
@@ -181,7 +190,7 @@ void RunDoctorMenu(DoctorManager manager)
     }
 }
 
-void RunAppointmentMenu(AppointmentManager appManager, PatientManager pManager, DoctorManager dManager)
+void RunAppointmentMenu(Clinic clinic)
 {
     bool exit = false;
     while (!exit)
@@ -202,41 +211,41 @@ void RunAppointmentMenu(AppointmentManager appManager, PatientManager pManager, 
         {
             case "1":
                 Console.WriteLine("Майбутні записи:");
-                appManager.DisplayList(appManager.GetUpcoming());
+                clinic.Appointments.DisplayList(clinic.Appointments.GetUpcoming());
                 break;
             case "2":
                 Console.Write("Введіть ID пацієнта: ");
                 if (int.TryParse(Console.ReadLine(), out int pId))
                 {
                     Console.WriteLine($"Записи пацієнта #{pId}:");
-                    appManager.DisplayList(appManager.GetByPatient(pId));
+                    clinic.Appointments.DisplayList(clinic.Appointments.GetByPatient(pId));
                 }
                 break;
             case "3":
-                pManager.DisplayAll();
-                dManager.DisplayAll();
+                clinic.Patients.DisplayAll();
+                clinic.Doctors.DisplayAll();
 
                 Console.Write("ID пацієнта: ");
                 int.TryParse(Console.ReadLine(), out int patientId);
                 Console.Write("ID лікаря: ");
                 int.TryParse(Console.ReadLine(), out int doctorId);
 
-                appManager.Book(patientId, doctorId, DateTime.Now.AddDays(1), 30);
+                clinic.Appointments.Book(patientId, doctorId, DateTime.Now.AddDays(1), 30);
                 break;
             case "4":
                 Console.Write("Введіть ID запису для скасування: ");
                 if (int.TryParse(Console.ReadLine(), out int appIdToCancel))
                 {
-                    Console.Write("Причина скасування (необов'язково): ");
+                    Console.Write("Причина скасування: ");
                     string reason = Console.ReadLine() ?? "";
-                    appManager.Cancel(appIdToCancel, reason);
+                    clinic.Appointments.Cancel(appIdToCancel, reason);
                 }
                 break;
             case "5":
                 Console.Write("Введіть ID запису для завершення: ");
                 if (int.TryParse(Console.ReadLine(), out int appIdToComplete))
                 {
-                    appManager.Complete(appIdToComplete);
+                    clinic.Appointments.Complete(appIdToComplete);
                 }
                 break;
             case "0":
