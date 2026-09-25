@@ -1,8 +1,9 @@
 ﻿using ClinicApp;
 
+RunGrowableTest();
+
 Clinic clinic = new Clinic("Медична Клініка");
 
-// Початкове наповнення даними через clinic
 clinic.Patients.Add(new Patient("Іван", "Петренко", DateTime.Today.AddYears(-41), "A+", "0501234567"));
 clinic.Patients.Add(new Patient("Олена", "Коваль", DateTime.Today.AddYears(-33), "B-", "0672345678"));
 clinic.Patients.Add(new Patient("Максим", "Бойко", DateTime.Today.AddYears(-16), "O+", "0933456789"));
@@ -42,7 +43,7 @@ while (!mainExit)
             RunAppointmentMenu(clinic);
             break;
         case "4":
-            Console.Write("Введіть дату (рррр-мм-дд або дд.мм.рррр): ");
+            Console.Write("Введіть дату (рррр-мм-дд): ");
             if (DateTime.TryParse(Console.ReadLine(), out DateTime date))
             {
                 clinic.DisplaySchedule(date);
@@ -62,6 +63,30 @@ while (!mainExit)
             Console.WriteLine("Невірний вибір.");
             break;
     }
+}
+
+void RunGrowableTest()
+{
+    Console.WriteLine("=== Тест GrowablePatientManager ===");
+    Console.WriteLine("Додаємо пацієнтів одного за одним...");
+
+    GrowablePatientManager growableManager = new GrowablePatientManager();
+
+    for (int i = 1; i <= 20; i++)
+    {
+        growableManager.Add(new Patient($"ТестПацієнт{i}", $"Прізвище{i}"));
+    }
+
+    Console.WriteLine("\nТест пошуку:");
+    Patient? found = growableManager.FindById(10);
+    Console.WriteLine($"FindById(10) -> {(found != null ? found.FullName : "не знайдено")}");
+
+    Patient? notFound = growableManager.FindById(99);
+    Console.WriteLine($"FindById(99) -> {(notFound != null ? notFound.FullName : "не знайдено")}");
+
+    Console.WriteLine("\nПорівняння:");
+    Console.WriteLine($"PatientManager:          100 місць (фіксовано)");
+    Console.WriteLine($"GrowablePatientManager:  {growableManager.Capacity} місця (зросте при потребі)\n");
 }
 
 void RunPatientMenu(Clinic clinic)
