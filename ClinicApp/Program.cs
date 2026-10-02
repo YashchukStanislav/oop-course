@@ -1,46 +1,46 @@
 ﻿using ClinicApp;
 
-
-
 RunWorkScheduleTest();
+
+RunClinicFormatterTest();
+
 RunGrowableTest();
-
-
 
 Clinic clinic = new Clinic("Медична Клініка");
 
+Patient patient1 = new Patient("Іван", "Петренко", DateTime.Today.AddYears(-41), BloodType.APositive, "0501234567");
+Patient patient2 = new Patient("Олена", "Коваль", DateTime.Today.AddYears(-33), BloodType.BNegative, "0672345678");
+Patient patient3 = new Patient("Максим", "Бойко", DateTime.Today.AddYears(-16), BloodType.OPositive, "0933456789");
 
-
-clinic.Patients.Add(new Patient("Іван", "Петренко", DateTime.Today.AddYears(-41), BloodType.APositive, "0501234567"));
-
-clinic.Patients.Add(new Patient("Олена", "Коваль", DateTime.Today.AddYears(-33), BloodType.BNegative, "0672345678"));
-
-clinic.Patients.Add(new Patient("Максим", "Бойко", DateTime.Today.AddYears(-16), BloodType.OPositive, "0933456789"));
-
-
+clinic.Patients.Add(patient1);
+clinic.Patients.Add(patient2);
+clinic.Patients.Add(patient3);
 
 Doctor doctor1 = new Doctor("Олег", "Сидоренко", Speciality.Cardiology, "LIC-001", "0441234567");
+
 doctor1.Schedule = new WorkSchedule(8, 16);
 
 Doctor doctor2 = new Doctor("Наталія", "Мороз", Speciality.Neurology, "LIC-002", "0442345678");
+
 doctor2.Schedule = new WorkSchedule(9, 17);
 
 Doctor doctor3 = new Doctor("Андрій", "Власенко", Speciality.Pediatrics, "LIC-003", "0443456789");
+
 doctor3.Schedule = new WorkSchedule(10, 18);
 
 clinic.Doctors.Add(doctor1);
+
 clinic.Doctors.Add(doctor2);
+
 clinic.Doctors.Add(doctor3);
 
+clinic.Appointments.Book(patient1.Id, doctor1.Id, new DateTime(2026, 5, 9, 10, 0, 0), 30);
 
+clinic.Appointments.Book(patient2.Id, doctor2.Id, new DateTime(2026, 5, 9, 11, 0, 0), 45);
 
-clinic.Appointments.Book(1, 1, new DateTime(2026, 5, 9, 10, 0, 0), 30);
+clinic.Appointments.Book(patient3.Id, doctor3.Id, new DateTime(2026, 5, 10, 9, 0, 0), 20);
 
-clinic.Appointments.Book(2, 2, new DateTime(2026, 5, 9, 11, 0, 0), 45);
-
-clinic.Appointments.Book(3, 3, new DateTime(2026, 5, 10, 9, 0, 0), 20);
-
-
+RunIndexerTest(clinic);
 
 bool mainExit = false;
 
@@ -64,13 +64,9 @@ while (!mainExit)
 
     Console.Write("Оберіть розділ: ");
 
-
-
     string? choice = Console.ReadLine();
 
     Console.WriteLine();
-
-
 
     switch (choice)
 
@@ -138,21 +134,66 @@ while (!mainExit)
 
 }
 
+void RunClinicFormatterTest()
+{
+    Console.WriteLine("=== Тест ClinicFormatter ===");
+    Console.WriteLine($"Група крові: {ClinicFormatter.FormatBloodType(BloodType.APositive)}");
+    Console.WriteLine($"Спеціальність: {ClinicFormatter.FormatSpeciality(Speciality.Cardiology)}");
+    Console.WriteLine($"Вік 1: {ClinicFormatter.FormatAge(1)}");
+    Console.WriteLine($"Вік 3: {ClinicFormatter.FormatAge(3)}");
+    Console.WriteLine($"Вік 11: {ClinicFormatter.FormatAge(11)}");
+    Console.WriteLine($"Вік 21: {ClinicFormatter.FormatAge(21)}");
+    Console.WriteLine($"Телефон: {ClinicFormatter.FormatPhone("0501234567")}");
+    Console.WriteLine();
+}
 
+void RunIndexerTest(Clinic clinic)
+{
+    Console.WriteLine("\n=== Тест індексаторів ===");
+
+    Patient? firstPatient = clinic.Patients[0];
+    Doctor? secondDoctor = clinic.Doctors[1];
+    Appointment? firstAppointment = clinic.Appointments[0];
+
+    Console.WriteLine($"Пацієнт [0]: {(firstPatient != null ? firstPatient.ToString() : "null")}");
+    Console.WriteLine($"Лікар [1]: {(secondDoctor != null ? secondDoctor.ToString() : "null")}");
+
+    if (firstAppointment != null)
+    {
+        Console.Write("Запис [0]: ");
+        clinic.Appointments.DisplayAppointment(firstAppointment);
+    }
+    else
+    {
+        Console.WriteLine("Запис [0]: null");
+    }
+
+    Console.WriteLine($"Некоректний індекс пацієнта [999]: {(clinic.Patients[999] == null ? "null" : "знайдено")}");
+    Console.WriteLine();
+}
 
 void RunWorkScheduleTest()
+
 {
+
     Console.WriteLine("=== Тест WorkSchedule ===");
 
     WorkSchedule morning = new WorkSchedule(8, 16);
+
     WorkSchedule evening = new WorkSchedule(14, 22);
 
     Console.WriteLine($"Ранкова зміна: {morning}");
+
     Console.WriteLine($"Вечірня зміна: {evening}");
+
     Console.WriteLine($"Годин у ранковій зміні: {morning.HoursPerDay}");
+
     Console.WriteLine($"Display: {morning.Display}");
+
     Console.WriteLine($"10:00 входить у ранкову зміну: {morning.Contains(10)}");
+
     Console.WriteLine($"18:00 входить у ранкову зміну: {morning.Contains(18)}");
+
     Console.WriteLine($"Лікар зараз на зміні: {morning.IsNow}");
 
     Console.WriteLine("\n=== Value type ===");
@@ -160,10 +201,12 @@ void RunWorkScheduleTest()
     WorkSchedule copy = morning;
 
     Console.WriteLine($"Оригінал: {morning}");
-    Console.WriteLine($"Копія:    {copy}");
-    Console.WriteLine();
-}
 
+    Console.WriteLine($"Копія:    {copy}");
+
+    Console.WriteLine();
+
+}
 
 void RunGrowableTest()
 
@@ -173,11 +216,7 @@ void RunGrowableTest()
 
     Console.WriteLine("Додаємо пацієнтів одного за одним...");
 
-
-
     GrowablePatientManager growableManager = new GrowablePatientManager();
-
-
 
     for (int i = 1; i <= 20; i++)
 
@@ -187,21 +226,15 @@ void RunGrowableTest()
 
     }
 
-
-
     Console.WriteLine("\nТест пошуку:");
 
     Patient? found = growableManager.FindById(10);
 
     Console.WriteLine($"FindById(10) -> {(found != null ? found.FullName : "не знайдено")}");
 
-
-
     Patient? notFound = growableManager.FindById(99);
 
     Console.WriteLine($"FindById(99) -> {(notFound != null ? notFound.FullName : "не знайдено")}");
-
-
 
     Console.WriteLine("\nПорівняння:");
 
@@ -210,8 +243,6 @@ void RunGrowableTest()
     Console.WriteLine($"GrowablePatientManager:  {growableManager.Capacity} місця (зросте при потребі)\n");
 
 }
-
-
 
 void RunPatientMenu(Clinic clinic)
 
@@ -239,13 +270,9 @@ void RunPatientMenu(Clinic clinic)
 
         Console.Write("Оберіть опцію: ");
 
-
-
         string? choice = Console.ReadLine();
 
         Console.WriteLine();
-
-
 
         switch (choice)
 
@@ -335,8 +362,6 @@ void RunPatientMenu(Clinic clinic)
 
 }
 
-
-
 void RunDoctorMenu(Clinic clinic)
 
 {
@@ -363,13 +388,9 @@ void RunDoctorMenu(Clinic clinic)
 
         Console.Write("Оберіть опцію: ");
 
-
-
         string? choice = Console.ReadLine();
 
         Console.WriteLine();
-
-
 
         switch (choice)
 
@@ -406,13 +427,21 @@ void RunDoctorMenu(Clinic clinic)
                 Doctor newDoctor = new Doctor(firstName, lastName, speciality);
 
                 Console.Write("Початок робочого дня (година): ");
+
                 if (int.TryParse(Console.ReadLine(), out int startHour))
+
                 {
+
                     Console.Write("Кінець робочого дня (година): ");
+
                     if (int.TryParse(Console.ReadLine(), out int endHour))
+
                     {
+
                         newDoctor.Schedule = new WorkSchedule(startHour, endHour);
+
                     }
+
                 }
 
                 clinic.Doctors.Add(newDoctor);
@@ -483,8 +512,6 @@ void RunDoctorMenu(Clinic clinic)
 
 }
 
-
-
 void RunAppointmentMenu(Clinic clinic)
 
 {
@@ -511,13 +538,9 @@ void RunAppointmentMenu(Clinic clinic)
 
         Console.Write("Оберіть опцію: ");
 
-
-
         string? choice = Console.ReadLine();
 
         Console.WriteLine();
-
-
 
         switch (choice)
 
@@ -553,8 +576,6 @@ void RunAppointmentMenu(Clinic clinic)
 
                 clinic.Doctors.DisplayAll();
 
-
-
                 Console.Write("ID пацієнта: ");
 
                 int.TryParse(Console.ReadLine(), out int patientId);
@@ -562,8 +583,6 @@ void RunAppointmentMenu(Clinic clinic)
                 Console.Write("ID лікаря: ");
 
                 int.TryParse(Console.ReadLine(), out int doctorId);
-
-
 
                 clinic.Appointments.Book(patientId, doctorId, DateTime.Now.AddDays(1), 30);
 
