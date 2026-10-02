@@ -14,7 +14,8 @@ public static class ClinicFormatter
             BloodType.ABNegative => "AB-",
             BloodType.OPositive => "O+",
             BloodType.ONegative => "O-",
-            _ => bt.ToString()
+            BloodType.Unknown => "Невідомо",
+            _ => "Невідомо"
         };
     }
 
@@ -26,6 +27,10 @@ public static class ClinicFormatter
             Speciality.Cardiology => "Кардіологія",
             Speciality.Neurology => "Неврологія",
             Speciality.Pediatrics => "Педіатрія",
+            Speciality.Surgery => "Хірургія",
+            Speciality.Orthopedics => "Ортопедія",
+            Speciality.Dermatology => "Дерматологія",
+            Speciality.Emergency => "Швидка допомога",
             _ => speciality.ToString()
         };
     }

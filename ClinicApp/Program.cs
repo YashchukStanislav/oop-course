@@ -342,13 +342,19 @@ void RunWorkScheduleTest()
 
     Console.WriteLine("\n=== Value type ===");
 
-    WorkSchedule copy = morning;
+WorkSchedule copy = morning;
 
-    Console.WriteLine($"Оригінал: {morning}");
+Console.WriteLine("До зміни:");
+Console.WriteLine($"Оригінал: {morning}");
+Console.WriteLine($"Копія:    {copy}");
 
-    Console.WriteLine($"Копія:    {copy}");
+copy = new WorkSchedule(10, 18);
 
-    Console.WriteLine();
+Console.WriteLine("Після зміни копії:");
+Console.WriteLine($"Оригінал: {morning}");
+Console.WriteLine($"Копія:    {copy}");
+
+Console.WriteLine();
 
 }
 
