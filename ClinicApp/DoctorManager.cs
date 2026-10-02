@@ -8,6 +8,19 @@ public class DoctorManager
 
     public int Count => _count;
 
+    public Doctor? this[int index]
+    {
+        get
+        {
+            if (index < 0 || index >= _count)
+            {
+                return null;
+            }
+
+            return _doctors[index];
+        }
+    }
+
     public void Add(Doctor doctor)
     {
         if (_count >= MaxDoctors)
@@ -18,7 +31,10 @@ public class DoctorManager
 
         _doctors[_count] = doctor;
         _count++;
-        Console.WriteLine($"Лікаря [{doctor.Id}] {doctor.FullName} додано.");
+
+        Console.WriteLine(
+            $"Лікаря [{doctor.Id}] {doctor.FullName} додано."
+        );
     }
 
     public Doctor? FindById(int id)
@@ -30,7 +46,22 @@ public class DoctorManager
                 return _doctors[i];
             }
         }
+
         return null;
+    }
+
+    public bool TryFindById(int id, out Doctor doctor)
+    {
+        Doctor? found = FindById(id);
+
+        if (found != null)
+        {
+            doctor = found;
+            return true;
+        }
+
+        doctor = null!;
+        return false;
     }
 
     public Doctor[] FindBySpeciality(string speciality)
@@ -40,7 +71,11 @@ public class DoctorManager
 
         for (int i = 0; i < _count; i++)
         {
-            if (_doctors[i].Speciality.ToLower().Contains(search))
+            if (_doctors[i]
+                .Speciality
+                .ToString()
+                .ToLower()
+                .Contains(search))
             {
                 matchingCount++;
             }
@@ -51,7 +86,37 @@ public class DoctorManager
 
         for (int i = 0; i < _count; i++)
         {
-            if (_doctors[i].Speciality.ToLower().Contains(search))
+            if (_doctors[i]
+                .Speciality
+                .ToString()
+                .ToLower()
+                .Contains(search))
+            {
+                result[index++] = _doctors[i];
+            }
+        }
+
+        return result;
+    }
+
+    public Doctor[] FindBySpeciality(Speciality speciality)
+    {
+        int matchingCount = 0;
+
+        for (int i = 0; i < _count; i++)
+        {
+            if (_doctors[i].Speciality == speciality)
+            {
+                matchingCount++;
+            }
+        }
+
+        Doctor[] result = new Doctor[matchingCount];
+        int index = 0;
+
+        for (int i = 0; i < _count; i++)
+        {
+            if (_doctors[i].Speciality == speciality)
             {
                 result[index++] = _doctors[i];
             }
@@ -63,13 +128,20 @@ public class DoctorManager
     public Doctor[] GetAll()
     {
         Doctor[] copy = new Doctor[_count];
-        Array.Copy(_doctors, copy, _count);
+
+        Array.Copy(
+            _doctors,
+            copy,
+            _count
+        );
+
         return copy;
     }
 
     public bool Remove(int id)
     {
         int indexToRemove = -1;
+
         for (int i = 0; i < _count; i++)
         {
             if (_doctors[i].Id == id)
@@ -91,6 +163,7 @@ public class DoctorManager
 
         _doctors[_count - 1] = null!;
         _count--;
+
         return true;
     }
 
@@ -102,11 +175,15 @@ public class DoctorManager
             return;
         }
 
-        Console.WriteLine($"=== Лікарі ({_count} / {MaxDoctors}) ===");
+        Console.WriteLine(
+            $"=== Лікарі ({_count} / {MaxDoctors}) ==="
+        );
+
         for (int i = 0; i < _count; i++)
         {
             Console.WriteLine(_doctors[i]);
         }
+
         Console.WriteLine(new string('=', 40));
     }
 
@@ -114,11 +191,15 @@ public class DoctorManager
     {
         if (_count == 0)
         {
-            Console.WriteLine("Немає даних для статистики.");
+            Console.WriteLine(
+                "Немає даних для статистики."
+            );
+
             return;
         }
 
         int availableCount = 0;
+
         for (int i = 0; i < _count; i++)
         {
             if (_doctors[i].IsAvailableNow)
@@ -127,17 +208,30 @@ public class DoctorManager
             }
         }
 
-        Console.WriteLine("=== Статистика лікарів ===");
-        Console.WriteLine($"Всього:           {_count}");
-        Console.WriteLine($"Доступні зараз:   {availableCount}");
-        Console.WriteLine("По спеціальностях:");
+        Console.WriteLine(
+            "=== Статистика лікарів ==="
+        );
+
+        Console.WriteLine(
+            $"Всього:           {_count}"
+        );
+
+        Console.WriteLine(
+            $"Доступні зараз:   {availableCount}"
+        );
+
+        Console.WriteLine(
+            "По спеціальностях:"
+        );
 
         for (int i = 0; i < _count; i++)
         {
             bool alreadyProcessed = false;
+
             for (int j = 0; j < i; j++)
             {
-                if (_doctors[j].Speciality.Equals(_doctors[i].Speciality, StringComparison.OrdinalIgnoreCase))
+                if (_doctors[j].Speciality ==
+                    _doctors[i].Speciality)
                 {
                     alreadyProcessed = true;
                     break;
@@ -147,16 +241,24 @@ public class DoctorManager
             if (!alreadyProcessed)
             {
                 int specCount = 0;
+
                 for (int k = 0; k < _count; k++)
                 {
-                    if (_doctors[k].Speciality.Equals(_doctors[i].Speciality, StringComparison.OrdinalIgnoreCase))
+                    if (_doctors[k].Speciality ==
+                        _doctors[i].Speciality)
                     {
                         specCount++;
                     }
                 }
-                Console.WriteLine($"  {_doctors[i].Speciality}: {specCount}");
+
+                Console.WriteLine(
+                    $"  {_doctors[i].Speciality}: {specCount}"
+                );
             }
         }
-        Console.WriteLine(new string('=', 30));
+
+        Console.WriteLine(
+            new string('=', 30)
+        );
     }
 }

@@ -8,6 +8,19 @@ public class PatientManager
 
     public int Count => _count;
 
+    public Patient? this[int index]
+    {
+        get
+        {
+            if (index < 0 || index >= _count)
+            {
+                return null;
+            }
+
+            return _patients[index];
+        }
+    }
+
     public void Add(Patient patient)
     {
         if (_count >= MaxPatients)
@@ -18,7 +31,10 @@ public class PatientManager
 
         _patients[_count] = patient;
         _count++;
-        Console.WriteLine($"Пацієнта [{patient.Id}] {patient.FullName} додано.");
+
+        Console.WriteLine(
+            $"Пацієнта [{patient.Id}] {patient.FullName} додано."
+        );
     }
 
     public Patient? FindById(int id)
@@ -30,7 +46,22 @@ public class PatientManager
                 return _patients[i];
             }
         }
+
         return null;
+    }
+
+    public bool TryFindById(int id, out Patient patient)
+    {
+        Patient? found = FindById(id);
+
+        if (found != null)
+        {
+            patient = found;
+            return true;
+        }
+
+        patient = null!;
+        return false;
     }
 
     public Patient[] FindByName(string name)
@@ -40,7 +71,7 @@ public class PatientManager
 
         for (int i = 0; i < _count; i++)
         {
-            if (_patients[i].FirstName.ToLower().Contains(search) || 
+            if (_patients[i].FirstName.ToLower().Contains(search) ||
                 _patients[i].LastName.ToLower().Contains(search))
             {
                 matchingCount++;
@@ -52,8 +83,34 @@ public class PatientManager
 
         for (int i = 0; i < _count; i++)
         {
-            if (_patients[i].FirstName.ToLower().Contains(search) || 
+            if (_patients[i].FirstName.ToLower().Contains(search) ||
                 _patients[i].LastName.ToLower().Contains(search))
+            {
+                result[index++] = _patients[i];
+            }
+        }
+
+        return result;
+    }
+
+    public Patient[] FindByBloodType(BloodType bloodType)
+    {
+        int matchingCount = 0;
+
+        for (int i = 0; i < _count; i++)
+        {
+            if (_patients[i].BloodType == bloodType)
+            {
+                matchingCount++;
+            }
+        }
+
+        Patient[] result = new Patient[matchingCount];
+        int index = 0;
+
+        for (int i = 0; i < _count; i++)
+        {
+            if (_patients[i].BloodType == bloodType)
             {
                 result[index++] = _patients[i];
             }
@@ -65,6 +122,7 @@ public class PatientManager
     public bool Remove(int id)
     {
         int indexToRemove = -1;
+
         for (int i = 0; i < _count; i++)
         {
             if (_patients[i].Id == id)
@@ -86,6 +144,7 @@ public class PatientManager
 
         _patients[_count - 1] = null!;
         _count--;
+
         return true;
     }
 
@@ -97,11 +156,15 @@ public class PatientManager
             return;
         }
 
-        Console.WriteLine($"=== Пацієнти ({_count} / {MaxPatients}) ===");
+        Console.WriteLine(
+            $"=== Пацієнти ({_count} / {MaxPatients}) ==="
+        );
+
         for (int i = 0; i < _count; i++)
         {
             Console.WriteLine(_patients[i]);
         }
+
         Console.WriteLine(new string('=', 40));
     }
 
@@ -144,9 +207,21 @@ public class PatientManager
         Console.WriteLine("=== Статистика пацієнтів ===");
         Console.WriteLine($"Всього:         {_count}");
         Console.WriteLine($"Середній вік:   {averageAge:F1} р.");
-        Console.WriteLine($"Наймолодший:    {_patients[youngestIndex].FullName} ({_patients[youngestIndex].Age} р.)");
-        Console.WriteLine($"Найстарший:     {_patients[oldestIndex].FullName} ({_patients[oldestIndex].Age} р.)");
-        Console.WriteLine($"Дорослих:       {adultCount} з {_count}");
+
+        Console.WriteLine(
+            $"Наймолодший:    {_patients[youngestIndex].FullName} " +
+            $"({_patients[youngestIndex].Age} р.)"
+        );
+
+        Console.WriteLine(
+            $"Найстарший:     {_patients[oldestIndex].FullName} " +
+            $"({_patients[oldestIndex].Age} р.)"
+        );
+
+        Console.WriteLine(
+            $"Дорослих:       {adultCount} з {_count}"
+        );
+
         Console.WriteLine(new string('=', 30));
     }
 }
