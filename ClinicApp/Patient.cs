@@ -1,4 +1,3 @@
-// Patient.cs
 namespace ClinicApp;
 
 public class Patient
@@ -9,7 +8,7 @@ public class Patient
     public string FirstName { get; set; }
     public string LastName { get; set; }
     public DateTime DateOfBirth { get; set; }
-    public string BloodType { get; set; }
+    public BloodType BloodType { get; set; }
     public string Phone { get; set; }
     public string Email { get; set; }
     public string FullName => $"{FirstName} {LastName}";
@@ -29,7 +28,7 @@ public class Patient
 
     public bool IsAdult => Age >= 18;
 
-    public Patient(string firstName, string lastName, DateTime dob, string bloodType, string phone)
+    public Patient(string firstName, string lastName, DateTime dob, BloodType bloodType, string phone)
     {
         Id = _nextId++; 
         FirstName = firstName;
@@ -40,9 +39,8 @@ public class Patient
         Email = "";
     }
 
-
     public Patient(string firstName, string lastName) 
-        : this(firstName, lastName, DateTime.Today.AddYears(-26), "Невідомо", "0000000000")
+        : this(firstName, lastName, DateTime.Today.AddYears(-26), BloodType.Unknown, "0000000000")
     {
     }
 

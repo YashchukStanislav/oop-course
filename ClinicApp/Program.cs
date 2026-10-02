@@ -4,13 +4,13 @@ RunGrowableTest();
 
 Clinic clinic = new Clinic("Медична Клініка");
 
-clinic.Patients.Add(new Patient("Іван", "Петренко", DateTime.Today.AddYears(-41), "A+", "0501234567"));
-clinic.Patients.Add(new Patient("Олена", "Коваль", DateTime.Today.AddYears(-33), "B-", "0672345678"));
-clinic.Patients.Add(new Patient("Максим", "Бойко", DateTime.Today.AddYears(-16), "O+", "0933456789"));
+clinic.Patients.Add(new Patient("Іван", "Петренко", DateTime.Today.AddYears(-41), BloodType.APositive, "0501234567"));
+clinic.Patients.Add(new Patient("Олена", "Коваль", DateTime.Today.AddYears(-33), BloodType.BNegative, "0672345678"));
+clinic.Patients.Add(new Patient("Максим", "Бойко", DateTime.Today.AddYears(-16), BloodType.OPositive, "0933456789"));
 
-clinic.Doctors.Add(new Doctor("Олег", "Сидоренко", "Кардіологія", "LIC-001", "0441234567"));
-clinic.Doctors.Add(new Doctor("Наталія", "Мороз", "Неврологія", "LIC-002", "0442345678"));
-clinic.Doctors.Add(new Doctor("Андрій", "Власенко", "Педіатрія", "LIC-003", "0443456789"));
+clinic.Doctors.Add(new Doctor("Олег", "Сидоренко", Speciality.Cardiology, "LIC-001", "0441234567"));
+clinic.Doctors.Add(new Doctor("Наталія", "Мороз", Speciality.Neurology, "LIC-002", "0442345678"));
+clinic.Doctors.Add(new Doctor("Андрій", "Власенко", Speciality.Pediatrics, "LIC-003", "0443456789"));
 
 clinic.Appointments.Book(1, 1, new DateTime(2026, 5, 9, 10, 0, 0), 30);
 clinic.Appointments.Book(2, 2, new DateTime(2026, 5, 9, 11, 0, 0), 45);
@@ -178,8 +178,12 @@ void RunDoctorMenu(Clinic clinic)
                 string firstName = Console.ReadLine() ?? "";
                 Console.Write("Прізвище: ");
                 string lastName = Console.ReadLine() ?? "";
-                Console.Write("Спеціальність: ");
-                string speciality = Console.ReadLine() ?? "";
+                Console.Write("Спеціальність (General, Cardiology, Neurology, Pediatrics): ");
+                string specInput = Console.ReadLine() ?? "";
+                if (!Enum.TryParse<Speciality>(specInput, true, out var speciality))
+                {
+                    speciality = Speciality.General;
+                }
                 clinic.Doctors.Add(new Doctor(firstName, lastName, speciality));
                 break;
             case "3":

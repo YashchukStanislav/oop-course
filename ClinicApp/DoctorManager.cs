@@ -40,7 +40,7 @@ public class DoctorManager
 
         for (int i = 0; i < _count; i++)
         {
-            if (_doctors[i].Speciality.ToLower().Contains(search))
+            if (_doctors[i].Speciality.ToString().ToLower().Contains(search))
             {
                 matchingCount++;
             }
@@ -51,7 +51,7 @@ public class DoctorManager
 
         for (int i = 0; i < _count; i++)
         {
-            if (_doctors[i].Speciality.ToLower().Contains(search))
+            if (_doctors[i].Speciality.ToString().ToLower().Contains(search))
             {
                 result[index++] = _doctors[i];
             }
@@ -137,7 +137,7 @@ public class DoctorManager
             bool alreadyProcessed = false;
             for (int j = 0; j < i; j++)
             {
-                if (_doctors[j].Speciality.Equals(_doctors[i].Speciality, StringComparison.OrdinalIgnoreCase))
+                if (_doctors[j].Speciality == _doctors[i].Speciality)
                 {
                     alreadyProcessed = true;
                     break;
@@ -149,7 +149,7 @@ public class DoctorManager
                 int specCount = 0;
                 for (int k = 0; k < _count; k++)
                 {
-                    if (_doctors[k].Speciality.Equals(_doctors[i].Speciality, StringComparison.OrdinalIgnoreCase))
+                    if (_doctors[k].Speciality == _doctors[i].Speciality)
                     {
                         specCount++;
                     }
