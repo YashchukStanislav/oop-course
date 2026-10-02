@@ -9,11 +9,15 @@ RunGrowableTest();
 Clinic clinic = new Clinic("Медична Клініка");
 
 Patient patient1 = new Patient("Іван", "Петренко", DateTime.Today.AddYears(-41), BloodType.APositive, "0501234567");
+
 Patient patient2 = new Patient("Олена", "Коваль", DateTime.Today.AddYears(-33), BloodType.BNegative, "0672345678");
+
 Patient patient3 = new Patient("Максим", "Бойко", DateTime.Today.AddYears(-16), BloodType.OPositive, "0933456789");
 
 clinic.Patients.Add(patient1);
+
 clinic.Patients.Add(patient2);
+
 clinic.Patients.Add(patient3);
 
 Doctor doctor1 = new Doctor("Олег", "Сидоренко", Speciality.Cardiology, "LIC-001", "0441234567");
@@ -41,6 +45,8 @@ clinic.Appointments.Book(patient2.Id, doctor2.Id, new DateTime(2026, 5, 9, 11, 0
 clinic.Appointments.Book(patient3.Id, doctor3.Id, new DateTime(2026, 5, 10, 9, 0, 0), 20);
 
 RunIndexerTest(clinic);
+
+RunTask04Test(clinic);
 
 bool mainExit = false;
 
@@ -134,42 +140,180 @@ while (!mainExit)
 
 }
 
-void RunClinicFormatterTest()
+void RunTask04Test(Clinic clinic)
 {
-    Console.WriteLine("=== Тест ClinicFormatter ===");
-    Console.WriteLine($"Група крові: {ClinicFormatter.FormatBloodType(BloodType.APositive)}");
-    Console.WriteLine($"Спеціальність: {ClinicFormatter.FormatSpeciality(Speciality.Cardiology)}");
-    Console.WriteLine($"Вік 1: {ClinicFormatter.FormatAge(1)}");
-    Console.WriteLine($"Вік 3: {ClinicFormatter.FormatAge(3)}");
-    Console.WriteLine($"Вік 11: {ClinicFormatter.FormatAge(11)}");
-    Console.WriteLine($"Вік 21: {ClinicFormatter.FormatAge(21)}");
-    Console.WriteLine($"Телефон: {ClinicFormatter.FormatPhone("0501234567")}");
-    Console.WriteLine();
-}
+    Console.WriteLine("\n=== Тест Task 04 ===");
 
-void RunIndexerTest(Clinic clinic)
-{
-    Console.WriteLine("\n=== Тест індексаторів ===");
+    Console.WriteLine("\n--- Перевантаження FindBySpeciality ---");
+
+    Doctor[] cardiologists =
+        clinic.Doctors.FindBySpeciality(Speciality.Cardiology);
+
+    Console.WriteLine($"Кардіологів знайдено: {cardiologists.Length}");
+
+    foreach (Doctor cardiologist in cardiologists)
+    {
+        Console.WriteLine(cardiologist);
+    }
+
+    Doctor[] foundByString =
+        clinic.Doctors.FindBySpeciality("Neuro");
+
+    Console.WriteLine(
+        $"\nЗа рядком \"Neuro\" знайдено: {foundByString.Length}"
+    );
+
+    foreach (Doctor foundDoctor in foundByString)
+    {
+        Console.WriteLine(foundDoctor);
+    }
+
+    Console.WriteLine("\n--- Перевантаження GetByDate ---");
+
+    Appointment[] appointments =
+        clinic.Appointments.GetByDate(2026, 5, 9);
+
+    Console.WriteLine(
+        $"Записів на 09.05.2026: {appointments.Length}"
+    );
+
+    clinic.Appointments.DisplayList(appointments);
+
+    Console.WriteLine("\n--- TryFindById Patient ---");
 
     Patient? firstPatient = clinic.Patients[0];
-    Doctor? secondDoctor = clinic.Doctors[1];
-    Appointment? firstAppointment = clinic.Appointments[0];
 
-    Console.WriteLine($"Пацієнт [0]: {(firstPatient != null ? firstPatient.ToString() : "null")}");
-    Console.WriteLine($"Лікар [1]: {(secondDoctor != null ? secondDoctor.ToString() : "null")}");
-
-    if (firstAppointment != null)
+    if (firstPatient != null &&
+        clinic.Patients.TryFindById(
+            firstPatient.Id,
+            out Patient foundPatient))
     {
-        Console.Write("Запис [0]: ");
-        clinic.Appointments.DisplayAppointment(firstAppointment);
+        Console.WriteLine(
+            $"Пацієнта знайдено: {foundPatient.FullName}"
+        );
     }
     else
     {
+        Console.WriteLine("Пацієнта не знайдено.");
+    }
+
+    Console.WriteLine("\n--- TryFindById Doctor ---");
+
+    Doctor? firstDoctor = clinic.Doctors[0];
+
+    if (firstDoctor != null &&
+        clinic.Doctors.TryFindById(
+            firstDoctor.Id,
+            out Doctor foundDoctorById))
+    {
+        Console.WriteLine(
+            $"Лікаря знайдено: {foundDoctorById.FullName}"
+        );
+    }
+    else
+    {
+        Console.WriteLine("Лікаря не знайдено.");
+    }
+
+    Console.WriteLine("\n--- FindByBloodType ---");
+
+    Patient[] bloodPatients =
+        clinic.Patients.FindByBloodType(
+            BloodType.APositive
+        );
+
+    Console.WriteLine(
+        $"Пацієнтів з групою крові A+: {bloodPatients.Length}"
+    );
+
+    foreach (Patient bloodPatient in bloodPatients)
+    {
+        Console.WriteLine(bloodPatient);
+    }
+
+    Console.WriteLine("\n--- Оператори ?. та ?? ---");
+
+    string patientName =
+        clinic.Patients.FindById(999)?.FullName
+        ?? "не знайдено";
+
+    Console.WriteLine(
+        $"Пацієнт з ID 999: {patientName}"
+    );
+
+    string doctorName =
+        clinic.Doctors.FindById(999)?.FullName
+        ?? "не знайдено";
+
+    Console.WriteLine(
+        $"Лікар з ID 999: {doctorName}"
+    );
+
+    Console.WriteLine();
+}
+
+void RunClinicFormatterTest()
+
+{
+
+    Console.WriteLine("=== Тест ClinicFormatter ===");
+
+    Console.WriteLine($"Група крові: {ClinicFormatter.FormatBloodType(BloodType.APositive)}");
+
+    Console.WriteLine($"Спеціальність: {ClinicFormatter.FormatSpeciality(Speciality.Cardiology)}");
+
+    Console.WriteLine($"Вік 1: {ClinicFormatter.FormatAge(1)}");
+
+    Console.WriteLine($"Вік 3: {ClinicFormatter.FormatAge(3)}");
+
+    Console.WriteLine($"Вік 11: {ClinicFormatter.FormatAge(11)}");
+
+    Console.WriteLine($"Вік 21: {ClinicFormatter.FormatAge(21)}");
+
+    Console.WriteLine($"Телефон: {ClinicFormatter.FormatPhone("0501234567")}");
+
+    Console.WriteLine();
+
+}
+
+void RunIndexerTest(Clinic clinic)
+
+{
+
+    Console.WriteLine("\n=== Тест індексаторів ===");
+
+    Patient? firstPatient = clinic.Patients[0];
+
+    Doctor? secondDoctor = clinic.Doctors[1];
+
+    Appointment? firstAppointment = clinic.Appointments[0];
+
+    Console.WriteLine($"Пацієнт [0]: {(firstPatient != null ? firstPatient.ToString() : "null")}");
+
+    Console.WriteLine($"Лікар [1]: {(secondDoctor != null ? secondDoctor.ToString() : "null")}");
+
+    if (firstAppointment != null)
+
+    {
+
+        Console.Write("Запис [0]: ");
+
+        clinic.Appointments.DisplayAppointment(firstAppointment);
+
+    }
+
+    else
+
+    {
+
         Console.WriteLine("Запис [0]: null");
+
     }
 
     Console.WriteLine($"Некоректний індекс пацієнта [999]: {(clinic.Patients[999] == null ? "null" : "знайдено")}");
+
     Console.WriteLine();
+
 }
 
 void RunWorkScheduleTest()
