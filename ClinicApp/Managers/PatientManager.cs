@@ -1,4 +1,7 @@
-namespace ClinicApp;
+using ClinicApp.Models;
+using ClinicApp.Enums;
+
+namespace ClinicApp.Managers;
 
 public class PatientManager
 {
@@ -71,8 +74,18 @@ public class PatientManager
 
         for (int i = 0; i < _count; i++)
         {
-            if (_patients[i].FirstName.ToLower().Contains(search) ||
-                _patients[i].LastName.ToLower().Contains(search))
+            Patient? patient = _patients[i];
+
+            if (patient is null)
+            {
+                continue;
+            }
+
+            string firstName = patient.FirstName ?? string.Empty;
+            string lastName = patient.LastName ?? string.Empty;
+
+            if (firstName.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+                lastName.Contains(search, StringComparison.OrdinalIgnoreCase))
             {
                 matchingCount++;
             }
@@ -95,17 +108,7 @@ public class PatientManager
 
     public Patient[] FindByBloodType(BloodType bloodType)
     {
-        int matchingCount = 0;
-
-        for (int i = 0; i < _count; i++)
-        {
-            if (_patients[i].BloodType == bloodType)
-            {
-                matchingCount++;
-            }
-        }
-
-        Patient[] result = new Patient[matchingCount];
+        Patient[] result = new Patient[_count];
         int index = 0;
 
         for (int i = 0; i < _count; i++)

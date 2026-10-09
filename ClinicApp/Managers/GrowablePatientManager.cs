@@ -1,4 +1,6 @@
-namespace ClinicApp;
+using ClinicApp.Models;
+
+namespace ClinicApp.Managers;
 
 public class GrowablePatientManager
 {
@@ -14,10 +16,12 @@ public class GrowablePatientManager
         Console.WriteLine($"Масив заповнений! Розширення: {_patients.Length} -> {newCapacity}");
         
         Patient[] newArray = new Patient[newCapacity];
+
         for (int i = 0; i < _count; i++)
         {
             newArray[i] = _patients[i];
         }
+
         _patients = newArray;
     }
 
@@ -29,7 +33,10 @@ public class GrowablePatientManager
         }
 
         _patients[_count++] = patient;
-        Console.WriteLine($"Додано [{patient.Id}]. Розмір: {_count} / {Capacity}");
+
+        Console.WriteLine(
+            $"Додано [{patient.Id}]. Розмір: {_count} / {Capacity}"
+        );
     }
 
     public Patient? FindById(int id)
@@ -41,12 +48,14 @@ public class GrowablePatientManager
                 return _patients[i];
             }
         }
+
         return null;
     }
 
     public bool Remove(int id)
     {
         int index = -1;
+
         for (int i = 0; i < _count; i++)
         {
             if (_patients[i].Id == id)
@@ -67,12 +76,16 @@ public class GrowablePatientManager
         }
 
         _patients[--_count] = null!;
+
         return true;
     }
 
     public void DisplayAll()
     {
-        Console.WriteLine($"=== Список пацієнтів (Заповнено: {_count}/{Capacity}) ===");
+        Console.WriteLine(
+            $"=== Список пацієнтів (Заповнено: {_count}/{Capacity}) ==="
+        );
+
         if (_count == 0)
         {
             Console.WriteLine("Список порожній.");

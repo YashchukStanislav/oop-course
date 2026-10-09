@@ -1,3 +1,6 @@
+using ClinicApp.Managers;
+using ClinicApp.Models;
+
 namespace ClinicApp;
 
 public class Clinic
@@ -38,6 +41,7 @@ public class Clinic
         foreach (var doc in allDoctors)
         {
             int load = 0;
+
             for (int i = 0; i < upcoming.Length; i++)
             {
                 if (upcoming[i].DoctorId == doc.Id)
@@ -46,7 +50,9 @@ public class Clinic
                 }
             }
 
-            string docInfo = $"{doc.FullName} ({doc.Speciality}): {load} записів";
+            string docInfo =
+                $"{doc.FullName} ({doc.Speciality}): {load} записів";
+
             Console.WriteLine($"║   {docInfo,-45} ║");
         }
 

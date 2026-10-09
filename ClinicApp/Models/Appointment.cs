@@ -1,4 +1,6 @@
-namespace ClinicApp;
+using ClinicApp.Enums;
+
+namespace ClinicApp.Models;
 
 public class Appointment
 {
@@ -13,9 +15,16 @@ public class Appointment
     public string Notes { get; private set; }
 
     public DateTime EndsAt => ScheduledAt.AddMinutes(DurationMinutes);
-    public bool IsUpcoming => ScheduledAt > DateTime.Now && Status == AppointmentStatus.Scheduled;
 
-    public Appointment(int patientId, int doctorId, DateTime scheduledAt, int durationMinutes = 30)
+    public bool IsUpcoming =>
+        ScheduledAt > DateTime.Now &&
+        Status == AppointmentStatus.Scheduled;
+
+    public Appointment(
+        int patientId,
+        int doctorId,
+        DateTime scheduledAt,
+        int durationMinutes = 30)
     {
         Id = ++_nextId;
         PatientId = patientId;
@@ -34,10 +43,12 @@ public class Appointment
         }
 
         Status = AppointmentStatus.Cancelled;
+
         if (!string.IsNullOrWhiteSpace(reason))
         {
             Notes = reason;
         }
+
         return true;
     }
 
@@ -54,11 +65,15 @@ public class Appointment
 
     public override string ToString()
     {
-        string result = $"[{Id}] Пацієнт #{PatientId} -> Лікар #{DoctorId} | {ScheduledAt:dd.MM.yyyy HH:mm}–{EndsAt:HH:mm} | {Status}";
+        string result =
+            $"[{Id}] Пацієнт #{PatientId} -> Лікар #{DoctorId} | " +
+            $"{ScheduledAt:dd.MM.yyyy HH:mm}–{EndsAt:HH:mm} | {Status}";
+
         if (Notes.Length > 0)
         {
             result += $" | {Notes}";
         }
+
         return result;
     }
 }
