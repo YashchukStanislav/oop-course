@@ -1,3 +1,4 @@
+﻿using System;
 using ClinicApp.Models;
 
 namespace ClinicApp.Managers;
@@ -7,36 +8,43 @@ public class GrowablePatientManager
     private Patient[] _patients = new Patient[4];
     private int _count = 0;
 
-    public int Count => _count;
-    public int Capacity => _patients.Length;
-
-    private void Resize()
+    public int Count
     {
-        int newCapacity = _patients.Length * 2;
-        Console.WriteLine($"Масив заповнений! Розширення: {_patients.Length} -> {newCapacity}");
+        get { return _count; }
+    }
+
+    public int Capacity
+    {
+        get { return _patients.Length; }
+    }
+
+    private void Grow()
+    {
+        int oldCapacity = _patients.Length;
+        int newCapacity = oldCapacity * 2; 
         
         Patient[] newArray = new Patient[newCapacity];
-
         for (int i = 0; i < _count; i++)
         {
             newArray[i] = _patients[i];
         }
-
+        
         _patients = newArray;
+        
+        Console.WriteLine($"Масив заповнений! Розширення: {oldCapacity} -> {newCapacity}");
     }
 
     public void Add(Patient patient)
     {
         if (_count == _patients.Length)
         {
-            Resize();
+            Grow();
         }
 
-        _patients[_count++] = patient;
-
-        Console.WriteLine(
-            $"Додано [{patient.Id}]. Розмір: {_count} / {Capacity}"
-        );
+        _patients[_count] = patient;
+        _count++;
+        
+        Console.WriteLine($"Додано [{patient.Id}]. Розмір: {_count} / {Capacity}");
     }
 
     public Patient? FindById(int id)
@@ -48,44 +56,36 @@ public class GrowablePatientManager
                 return _patients[i];
             }
         }
-
-        return null;
+        return null; 
     }
 
     public bool Remove(int id)
     {
-        int index = -1;
-
+        int indexToRemove = -1;
         for (int i = 0; i < _count; i++)
         {
             if (_patients[i].Id == id)
             {
-                index = i;
+                indexToRemove = i;
                 break;
             }
         }
 
-        if (index == -1)
-        {
-            return false;
-        }
+        if (indexToRemove == -1) return false;
 
-        for (int i = index; i < _count - 1; i++)
+        for (int i = indexToRemove; i < _count - 1; i++)
         {
             _patients[i] = _patients[i + 1];
         }
-
-        _patients[--_count] = null!;
+        _patients[_count - 1] = null!;
+        _count--;
 
         return true;
     }
 
     public void DisplayAll()
     {
-        Console.WriteLine(
-            $"=== Список пацієнтів (Заповнено: {_count}/{Capacity}) ==="
-        );
-
+        Console.WriteLine($"\n=== Пацієнти (Динамічний список: {_count} / {Capacity}) ===");
         if (_count == 0)
         {
             Console.WriteLine("Список порожній.");
@@ -94,7 +94,7 @@ public class GrowablePatientManager
 
         for (int i = 0; i < _count; i++)
         {
-            Console.WriteLine(_patients[i]);
+            Console.WriteLine(_patients[i].ToString());
         }
     }
 }

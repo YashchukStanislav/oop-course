@@ -1,14 +1,13 @@
-namespace ClinicApp.Enums
+﻿namespace ClinicApp.Enums;
+
+public enum Speciality
 {
-    public enum Speciality
-    {
-        General,
-        Cardiology,
-        Neurology,
-        Pediatrics,
-        Surgery,
-        Orthopedics,
-        Dermatology,
-        Emergency
-    }
+    General,
+    Cardiology,
+    Neurology,
+    Pediatrics,
+    Surgery,
+    Orthopedics,
+    Dermatology,
+    Emergency
 }

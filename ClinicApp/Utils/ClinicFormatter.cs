@@ -1,3 +1,4 @@
+﻿using System;
 using ClinicApp.Enums;
 
 namespace ClinicApp.Utils;
@@ -16,16 +17,15 @@ public static class ClinicFormatter
             BloodType.ABNegative => "AB-",
             BloodType.OPositive => "O+",
             BloodType.ONegative => "O-",
-            BloodType.Unknown => "Невідомо",
             _ => "Невідомо"
         };
     }
 
-    public static string FormatSpeciality(Speciality speciality)
+    public static string FormatSpeciality(Speciality s)
     {
-        return speciality switch
+        return s switch
         {
-            Speciality.General => "Терапевт",
+            Speciality.General => "Загальна практика",
             Speciality.Cardiology => "Кардіологія",
             Speciality.Neurology => "Неврологія",
             Speciality.Pediatrics => "Педіатрія",
@@ -33,45 +33,50 @@ public static class ClinicFormatter
             Speciality.Orthopedics => "Ортопедія",
             Speciality.Dermatology => "Дерматологія",
             Speciality.Emergency => "Швидка допомога",
-            _ => speciality.ToString()
+            _ => s.ToString()
         };
     }
 
     public static string FormatAge(int age)
     {
-        int lastTwoDigits = age % 100;
-        int lastDigit = age % 10;
-
-        if (lastTwoDigits >= 11 && lastTwoDigits <= 19)
+        int remainder100 = age % 100;
+        if (remainder100 >= 11 && remainder100 <= 19)
         {
             return $"{age} років";
         }
 
-        return lastDigit switch
+        int remainder10 = age % 10;
+        if (remainder10 == 1)
         {
-            1 => $"{age} рік",
-            2 or 3 or 4 => $"{age} роки",
-            _ => $"{age} років"
-        };
+            return $"{age} рік";
+        }
+        if (remainder10 >= 2 && remainder10 <= 4)
+        {
+            return $"{age} роки";
+        }
+        
+        return $"{age} років";
     }
 
     public static string FormatPhone(string phone)
     {
-        if (phone.Length != 10)
+        if (phone.Length == 10)
         {
-            return phone;
-        }
-
-        foreach (char c in phone)
-        {
-            if (!char.IsDigit(c))
+            bool isAllDigits = true;
+            for (int i = 0; i < phone.Length; i++)
             {
-                return phone;
+                if (!char.IsDigit(phone[i]))
+                {
+                    isAllDigits = false;
+                    break;
+                }
+            }
+
+            if (isAllDigits)
+            {
+                return $"({phone.Substring(0, 3)}) {phone.Substring(3, 3)}-{phone.Substring(6, 4)}";
             }
         }
-
-        return $"({phone.Substring(0, 3)}) " +
-               $"{phone.Substring(3, 3)}-" +
-               $"{phone.Substring(6, 4)}";
+        return phone;
     }
 }

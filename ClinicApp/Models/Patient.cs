@@ -1,3 +1,4 @@
+﻿using System;
 using ClinicApp.Enums;
 using ClinicApp.Utils;
 
@@ -11,56 +12,36 @@ public class Patient
     private string _lastName = "";
     private DateTime _dateOfBirth;
     private string _phone = "";
+    private string _email = "";
 
-    public int Id { get; }
+    public int Id { get; private set; }
 
     public string FirstName
     {
-        get => _firstName;
+        get { return _firstName; }
         set
         {
-            if (string.IsNullOrWhiteSpace(value) || value.Length > 50)
-            {
-                throw new ArgumentException(
-                    "Ім'я не може бути порожнім і не може бути довшим за 50 символів.",
-                    nameof(FirstName)
-                );
-            }
-
+            ClinicValidator.ValidateName(value, nameof(FirstName));
             _firstName = value;
         }
     }
 
     public string LastName
     {
-        get => _lastName;
+        get { return _lastName; }
         set
         {
-            if (string.IsNullOrWhiteSpace(value) || value.Length > 50)
-            {
-                throw new ArgumentException(
-                    "Прізвище не може бути порожнім і не може бути довшим за 50 символів.",
-                    nameof(LastName)
-                );
-            }
-
+            ClinicValidator.ValidateName(value, nameof(LastName));
             _lastName = value;
         }
     }
 
     public DateTime DateOfBirth
     {
-        get => _dateOfBirth;
+        get { return _dateOfBirth; }
         set
         {
-            if (value > DateTime.Today || value.Year < 1900)
-            {
-                throw new ArgumentOutOfRangeException(
-                    nameof(DateOfBirth),
-                    "Дата народження має бути не раніше 1900 року і не пізніше сьогодні."
-                );
-            }
-
+            ClinicValidator.ValidateDate(value, nameof(DateOfBirth));
             _dateOfBirth = value;
         }
     }
@@ -69,42 +50,34 @@ public class Patient
 
     public string Phone
     {
-        get => _phone;
+        get { return _phone; }
         set
         {
-            if (value.Length != 10)
-            {
-                throw new ArgumentException(
-                    "Телефон повинен містити рівно 10 цифр.",
-                    nameof(Phone)
-                );
-            }
-
-            foreach (char c in value)
-            {
-                if (!char.IsDigit(c))
-                {
-                    throw new ArgumentException(
-                        "Телефон повинен містити лише цифри.",
-                        nameof(Phone)
-                    );
-                }
-            }
-
+            ClinicValidator.ValidatePhone(value);
             _phone = value;
         }
     }
 
-    public string Email { get; set; }
+    public string Email
+    {
+        get { return _email; }
+        set
+        {
+            ClinicValidator.ValidateEmail(value);
+            _email = value ?? "";
+        }
+    }
 
-    public string FullName => $"{FirstName} {LastName}";
+    public string FullName
+    {
+        get { return FirstName + " " + LastName; }
+    }
 
     public int Age
     {
         get
         {
             int age = DateTime.Today.Year - DateOfBirth.Year;
-
             if (DateOfBirth.Date > DateTime.Today.AddYears(-age))
             {
                 age--;
@@ -113,15 +86,13 @@ public class Patient
             return age;
         }
     }
+    
+    public bool IsAdult
+    {
+        get { return Age >= 18; }
+    }
 
-    public bool IsAdult => Age >= 18;
-
-    public Patient(
-        string firstName,
-        string lastName,
-        DateTime dob,
-        BloodType bloodType,
-        string phone)
+    public Patient(string firstName, string lastName, DateTime dob, BloodType bloodType, string phone)
     {
         FirstName = firstName;
         LastName = lastName;
@@ -129,17 +100,12 @@ public class Patient
         BloodType = bloodType;
         Phone = phone;
         Email = "";
-
+        
         Id = _nextId++;
     }
 
     public Patient(string firstName, string lastName)
-        : this(
-            firstName,
-            lastName,
-            DateTime.Today.AddYears(-26),
-            BloodType.Unknown,
-            "0000000000")
+        : this(firstName, lastName, new DateTime(2000, 1, 1), BloodType.Unknown, "0000000000")
     {
     }
 
@@ -154,20 +120,18 @@ public class Patient
         {
             return "дитина";
         }
-
-        if (Age < 60)
+        else if (Age < 60)
         {
             return "дорослий";
         }
-
-        return "літній";
+        else
+        {
+            return "літній";
+        }
     }
 
     public override string ToString()
     {
-        return $"[{Id}] {FullName} | " +
-               $"Вік: {ClinicFormatter.FormatAge(Age)} ({GetAgeCategory()}) | " +
-               $"Кров: {ClinicFormatter.FormatBloodType(BloodType)} | " +
-               $"Тел: {ClinicFormatter.FormatPhone(Phone)}";
+        return $"[{Id}] {FullName} | Вік: {ClinicFormatter.FormatAge(Age)} ({GetAgeCategory()}) | Кров: {ClinicFormatter.FormatBloodType(BloodType)} | Тел: {ClinicFormatter.FormatPhone(Phone)}";
     }
 }

@@ -1,3 +1,5 @@
+﻿using System;
+
 namespace ClinicApp.Models;
 
 public struct WorkSchedule
@@ -5,40 +7,41 @@ public struct WorkSchedule
     public int Start { get; }
     public int End { get; }
 
+    public int HoursPerDay
+    {
+        get { return End - Start; }
+    }
+
+    public string Display
+    {
+        get { return $"{Start:D2}:00-{End:D2}:00"; }
+    }
+
+    public bool IsNow
+    {
+        get { return Contains(DateTime.Now.Hour); }
+    }
+
     public WorkSchedule(int start, int end)
     {
         if (start < 0 || start > 23)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(start),
-                "Година початку має бути в межах від 0 до 23."
-            );
+            throw new ArgumentOutOfRangeException(nameof(start), "Година початку повинна бути від 0 до 23.");
         }
-
+        
         if (end < 1 || end > 24)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(end),
-                "Година завершення має бути в межах від 1 до 24."
-            );
+            throw new ArgumentOutOfRangeException(nameof(end), "Година закінчення повинна бути від 1 до 24.");
         }
-
+        
         if (start >= end)
         {
-            throw new ArgumentException(
-                "Година початку має бути меншою за годину завершення."
-            );
+            throw new ArgumentException("Година початку повинна бути меншою за годину закінчення.");
         }
-
+        
         Start = start;
         End = end;
     }
-
-    public int HoursPerDay => End - Start;
-
-    public string Display => $"{Start:D2}:00-{End:D2}:00";
-
-    public bool IsNow => Contains(DateTime.Now.Hour);
 
     public bool Contains(int hour)
     {
@@ -47,6 +50,6 @@ public struct WorkSchedule
 
     public override string ToString()
     {
-        return $"{Display} ({HoursPerDay} год)";
+        return Display + " (" + HoursPerDay + " год)";
     }
 }
