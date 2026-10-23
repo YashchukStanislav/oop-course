@@ -1,14 +1,16 @@
 ﻿using System;
 using ClinicApp.Enums;
 using ClinicApp.Utils;
+using ClinicApp.Interfaces;
 
 namespace ClinicApp.Models;
 
-public class Appointment
+public class Appointment : IPayable, ICancellable
 {
     private static int _nextId = 1;
 
     private int _durationMinutes;
+    private bool _isPaid = false;
 
     public int Id { get; private set; }
     public int PatientId { get; }
@@ -29,6 +31,29 @@ public class Appointment
     public AppointmentStatus Status { get; private set; }
     public string Notes { get; private set; }
 
+    public bool IsPaid
+    {
+        get { return _isPaid; }
+    }
+
+    public bool IsCancelled
+    {
+        get { return Status == AppointmentStatus.Cancelled; }
+    }
+
+    public string CancellationReason
+    {
+        get
+        {
+            if (IsCancelled)
+            {
+                return Notes;
+            }
+
+            return "";
+        }
+    }
+
     public DateTime EndsAt
     {
         get { return ScheduledAt.AddMinutes(DurationMinutes); }
@@ -36,20 +61,41 @@ public class Appointment
 
     public bool IsUpcoming
     {
-        get { return ScheduledAt > DateTime.Now && Status == AppointmentStatus.Scheduled; }
+        get
+        {
+            return ScheduledAt > DateTime.Now &&
+                   Status == AppointmentStatus.Scheduled;
+        }
     }
 
-    public Appointment(int patientId, int doctorId, DateTime scheduledAt, int durationMinutes = 30)
+    public Appointment(
+        int patientId,
+        int doctorId,
+        DateTime scheduledAt,
+        int durationMinutes = 30)
     {
         PatientId = patientId;
         DoctorId = doctorId;
         ScheduledAt = scheduledAt;
         DurationMinutes = durationMinutes;
-        
+
         Status = AppointmentStatus.Scheduled;
-        Notes = ""; 
-        
+        Notes = "";
+
         Id = _nextId++;
+    }
+
+    public decimal GetCost()
+    {
+        return DurationMinutes * 10m;
+    }
+
+    public void MarkPaid()
+    {
+        if (!IsCancelled)
+        {
+            _isPaid = true;
+        }
     }
 
     public bool Cancel(string reason = "")
@@ -60,6 +106,7 @@ public class Appointment
             Notes = reason;
             return true;
         }
+
         return false;
     }
 
@@ -70,18 +117,21 @@ public class Appointment
             Status = AppointmentStatus.Completed;
             return true;
         }
+
         return false;
     }
 
     public override string ToString()
     {
-        string baseInfo = $"[{Id}] Пацієнт #{PatientId} -> Лікар #{DoctorId} | {ScheduledAt:dd.MM.yyyy HH:mm}–{EndsAt:HH:mm} | {Status}";
-        
+        string baseInfo =
+            $"[{Id}] Пацієнт #{PatientId} -> Лікар #{DoctorId} | " +
+            $"{ScheduledAt:dd.MM.yyyy HH:mm}–{EndsAt:HH:mm} | {Status}";
+
         if (Notes.Length > 0)
         {
             return baseInfo + $" | {Notes}";
         }
-        
+
         return baseInfo;
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using ClinicApp.Models;
+using ClinicApp.Interfaces;
 
 namespace ClinicApp.Managers;
 
@@ -32,6 +33,7 @@ public class AppointmentManager
                 return _appointments[i];
             }
         }
+
         return null;
     }
 
@@ -51,7 +53,7 @@ public class AppointmentManager
             Console.WriteLine($"Помилка: пацієнта з ID {patientId} не знайдено.");
             return false;
         }
-        
+
         if (d == null)
         {
             Console.WriteLine($"Помилка: лікаря з ID {doctorId} не знайдено.");
@@ -62,17 +64,22 @@ public class AppointmentManager
         _appointments[_count] = app;
         _count++;
 
-        Console.WriteLine($"Запис [{app.Id}] створено: {p.FullName} -> {d.FullName} о {scheduledAt:dd.MM.yyyy HH:mm}");
+        Console.WriteLine(
+            $"Запис [{app.Id}] створено: {p.FullName} -> {d.FullName} о {scheduledAt:dd.MM.yyyy HH:mm}"
+        );
+
         return true;
     }
 
     public bool Cancel(int id, string reason = "")
     {
         Appointment? app = FindById(id);
+
         if (app != null)
         {
             return app.Cancel(reason);
         }
+
         return false;
     }
 
@@ -84,17 +91,20 @@ public class AppointmentManager
             {
                 return _appointments[index];
             }
+
             return null;
         }
     }
-    
+
     public bool Complete(int id)
     {
         Appointment? app = FindById(id);
+
         if (app != null)
         {
             return app.Complete();
         }
+
         return false;
     }
 
@@ -103,16 +113,21 @@ public class AppointmentManager
         Patient? p = _patients.FindById(app.PatientId);
         Doctor? d = _doctors.FindById(app.DoctorId);
 
-        string patientName = (p != null) ? p.FullName : $"Пацієнт #{app.PatientId}";
-        string doctorName = (d != null) ? d.FullName : $"Лікар #{app.DoctorId}";
+        string patientName =
+            p != null ? p.FullName : $"Пацієнт #{app.PatientId}";
 
-        string baseInfo = $"[{app.Id}] {patientName} -> {doctorName} | {app.ScheduledAt:dd.MM.yyyy HH:mm}-{app.EndsAt:HH:mm} | {app.Status}";
-        
+        string doctorName =
+            d != null ? d.FullName : $"Лікар #{app.DoctorId}";
+
+        string baseInfo =
+            $"[{app.Id}] {patientName} -> {doctorName} | " +
+            $"{app.ScheduledAt:dd.MM.yyyy HH:mm}-{app.EndsAt:HH:mm} | {app.Status}";
+
         if (app.Notes.Length > 0)
         {
             baseInfo += $" | {app.Notes}";
         }
-        
+
         Console.WriteLine(baseInfo);
     }
 
@@ -123,28 +138,60 @@ public class AppointmentManager
             Console.WriteLine("Записів не знайдено.");
             return;
         }
-        
+
         for (int i = 0; i < list.Length; i++)
         {
             DisplayAppointment(list[i]);
         }
     }
-    
+
+    public Appointment[] GetAll()
+    {
+        Appointment[] result = new Appointment[_count];
+
+        for (int i = 0; i < _count; i++)
+        {
+            result[i] = _appointments[i];
+        }
+
+        return result;
+    }
+
+    public static int CancelAll(ICancellable[] items, string reason = "")
+{
+    int cancelledCount = 0;
+
+    for (int i = 0; i < items.Length; i++)
+    {
+        if (items[i].Cancel(reason))
+        {
+            cancelledCount++;
+        }
+    }
+
+    return cancelledCount;
+}
+
     public Appointment[] GetByDate(int year, int month, int day)
     {
         return GetByDate(new DateTime(year, month, day));
     }
-    
+
     public Appointment[] GetByPatient(int patientId)
     {
         int matchCount = 0;
+
         for (int i = 0; i < _count; i++)
         {
-            if (_appointments[i].PatientId == patientId) matchCount++;
+            if (_appointments[i].PatientId == patientId)
+            {
+                matchCount++;
+            }
         }
 
         Appointment[] result = new Appointment[matchCount];
         int index = 0;
+
         for (int i = 0; i < _count; i++)
         {
             if (_appointments[i].PatientId == patientId)
@@ -152,19 +199,25 @@ public class AppointmentManager
                 result[index++] = _appointments[i];
             }
         }
+
         return result;
     }
 
     public Appointment[] GetByDoctor(int doctorId)
     {
         int matchCount = 0;
+
         for (int i = 0; i < _count; i++)
         {
-            if (_appointments[i].DoctorId == doctorId) matchCount++;
+            if (_appointments[i].DoctorId == doctorId)
+            {
+                matchCount++;
+            }
         }
 
         Appointment[] result = new Appointment[matchCount];
         int index = 0;
+
         for (int i = 0; i < _count; i++)
         {
             if (_appointments[i].DoctorId == doctorId)
@@ -172,19 +225,25 @@ public class AppointmentManager
                 result[index++] = _appointments[i];
             }
         }
+
         return result;
     }
 
     public Appointment[] GetByDate(DateTime date)
     {
         int matchCount = 0;
+
         for (int i = 0; i < _count; i++)
         {
-            if (_appointments[i].ScheduledAt.Date == date.Date) matchCount++;
+            if (_appointments[i].ScheduledAt.Date == date.Date)
+            {
+                matchCount++;
+            }
         }
 
         Appointment[] result = new Appointment[matchCount];
         int index = 0;
+
         for (int i = 0; i < _count; i++)
         {
             if (_appointments[i].ScheduledAt.Date == date.Date)
@@ -192,19 +251,25 @@ public class AppointmentManager
                 result[index++] = _appointments[i];
             }
         }
+
         return result;
     }
 
     public Appointment[] GetUpcoming()
     {
         int matchCount = 0;
+
         for (int i = 0; i < _count; i++)
         {
-            if (_appointments[i].IsUpcoming) matchCount++;
+            if (_appointments[i].IsUpcoming)
+            {
+                matchCount++;
+            }
         }
 
         Appointment[] result = new Appointment[matchCount];
         int index = 0;
+
         for (int i = 0; i < _count; i++)
         {
             if (_appointments[i].IsUpcoming)
@@ -212,6 +277,7 @@ public class AppointmentManager
                 result[index++] = _appointments[i];
             }
         }
+
         return result;
     }
 }
