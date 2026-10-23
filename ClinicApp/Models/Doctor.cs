@@ -1,10 +1,11 @@
 ﻿using System;
 using ClinicApp.Enums;
 using ClinicApp.Utils;
+using ClinicApp.Interfaces;
 
 namespace ClinicApp.Models;
 
-public class Doctor
+public class Doctor : ISchedulable
 {
     private static int _nextId = 1;
 
@@ -44,8 +45,12 @@ public class Doctor
         {
             if (string.IsNullOrWhiteSpace(value))
             {
-                throw new ArgumentException("Номер ліцензії не може бути порожнім.", nameof(LicenseNumber));
+                throw new ArgumentException(
+                    "Номер ліцензії не може бути порожнім.",
+                    nameof(LicenseNumber)
+                );
             }
+
             _licenseNumber = value;
         }
     }
@@ -72,7 +77,12 @@ public class Doctor
         get { return Schedule.IsNow; }
     }
 
-    public Doctor(string firstName, string lastName, Speciality speciality, string licenseNumber, string phone)
+    public Doctor(
+        string firstName,
+        string lastName,
+        Speciality speciality,
+        string licenseNumber,
+        string phone)
     {
         FirstName = firstName;
         LastName = lastName;
@@ -80,17 +90,28 @@ public class Doctor
         LicenseNumber = licenseNumber;
         Phone = phone;
         Schedule = new WorkSchedule(8, 17);
-        
+
         Id = _nextId++;
     }
 
-    public Doctor(string firstName, string lastName, Speciality speciality) 
-        : this(firstName, lastName, speciality, "Невідомо", "0000000000")
+    public Doctor(
+        string firstName,
+        string lastName,
+        Speciality speciality)
+        : this(
+            firstName,
+            lastName,
+            speciality,
+            "Невідомо",
+            "0000000000")
     {
     }
 
-    public Doctor() 
-        : this("Невідомий", "Лікар", Speciality.General)
+    public Doctor()
+        : this(
+            "Невідомий",
+            "Лікар",
+            Speciality.General)
     {
     }
 
@@ -99,9 +120,52 @@ public class Doctor
         return Schedule.Contains(hour);
     }
 
+    public bool CanSchedule(DateTime at)
+    {
+        return Schedule.Contains(at.Hour);
+    }
+
+    public DateTime[] GetAvailableSlots(
+        DateTime date,
+        int slotCount)
+    {
+        ClinicValidator.ValidatePositive(
+            slotCount,
+            nameof(slotCount)
+        );
+
+        int count = slotCount;
+
+        if (count > Schedule.HoursPerDay)
+        {
+            count = Schedule.HoursPerDay;
+        }
+
+        DateTime[] slots = new DateTime[count];
+
+        for (int i = 0; i < count; i++)
+        {
+            slots[i] =
+                date.Date.AddHours(
+                    Schedule.Start + i
+                );
+        }
+
+        return slots;
+    }
+
     public override string ToString()
     {
-        string status = IsAvailableNow ? "доступний зараз" : "не в робочий час";
-        return $"[{Id}] {FullName} | {ClinicFormatter.FormatSpeciality(Speciality)} | {LicenseNumber} | Тел: {ClinicFormatter.FormatPhone(Phone)} | {Schedule} | {status}";
+        string status =
+            IsAvailableNow
+                ? "доступний зараз"
+                : "не в робочий час";
+
+        return
+            $"[{Id}] {FullName} | " +
+            $"{ClinicFormatter.FormatSpeciality(Speciality)} | " +
+            $"{LicenseNumber} | " +
+            $"Тел: {ClinicFormatter.FormatPhone(Phone)} | " +
+            $"{Schedule} | {status}";
     }
 }
