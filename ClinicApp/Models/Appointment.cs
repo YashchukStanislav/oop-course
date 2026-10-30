@@ -28,6 +28,10 @@ public class Appointment : IPayable, ICancellable
         }
     }
 
+    // Варіант А: множник знижки зберігається в базовому класі.
+    // За замовчуванням знижки немає; для VIP встановлюємо 0.8m.
+    public decimal DiscountMultiplier { get; set; } = 1m;
+
     public AppointmentStatus Status { get; private set; }
     public string Notes { get; private set; }
 
@@ -87,7 +91,7 @@ public class Appointment : IPayable, ICancellable
 
     public virtual decimal GetCost()
     {
-        return DurationMinutes * 10m;
+        return DurationMinutes * 10m * DiscountMultiplier;
     }
 
     public virtual string GetDescription()
