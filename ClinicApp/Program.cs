@@ -311,6 +311,7 @@ class Program
             Console.WriteLine("4. Скасувати прийом (Cancelled)");
             Console.WriteLine("5. Знайти всі записи конкретного пацієнта");
             Console.WriteLine("8. Скасувати всі записи пацієнта");
+            Console.WriteLine("9. За типом прийому");
             Console.WriteLine("0. Назад до головного меню");
             Console.Write("Виберіть опцію: ");
             string? choice = Console.ReadLine();
@@ -402,6 +403,27 @@ class Program
                 Appointment[] patientAppointments = clinic.Appointments.GetByPatient(patientId);
                 int cancelled = AppointmentManager.CancelAll(patientAppointments, reason);
                 Console.WriteLine($"Скасовано записів: {cancelled}");
+            }
+            else if (choice == "9")
+            {
+                Console.WriteLine("\n--- Записи за типом ---");
+                Console.WriteLine("1. Термінові");
+                Console.WriteLine("2. Консультації спеціаліста");
+                Console.WriteLine("3. Звичайні");
+                Console.Write("Оберіть тип: ");
+                string? typeChoice = Console.ReadLine();
+
+                Appointment[] selected;
+                if (typeChoice == "1") selected = clinic.Appointments.GetUrgent();
+                else if (typeChoice == "2") selected = clinic.Appointments.GetSpecialist();
+                else if (typeChoice == "3") selected = clinic.Appointments.GetRegular();
+                else
+                {
+                    Console.WriteLine("Невідома команда.");
+                    continue;
+                }
+
+                clinic.Appointments.DisplayList(selected);
             }
             else if (choice == "0") break;
             else Console.WriteLine("Невідома команда.");
