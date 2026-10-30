@@ -34,9 +34,28 @@ class Program
             Schedule = new WorkSchedule(8, 17)
         });
 
+        // Початкові записи трьох типів
         clinic.Appointments.Book(1, 1, DateTime.Now.AddDays(1).AddHours(2), 30);
-        clinic.Appointments.Book(2, 2, DateTime.Now.AddDays(2).AddHours(3), 45);
-        clinic.Appointments.Book(1, 3, DateTime.Now.AddDays(3).AddHours(1), 20);
+        clinic.Appointments.BookUrgent(2, 2, DateTime.Now.AddDays(2).AddHours(3), "біль у грудях");
+        clinic.Appointments.BookSpecialist(1, 3, DateTime.Now.AddDays(3).AddHours(1), "кардіологія");
+
+        // Демонстрація різниці між override та new
+        Console.WriteLine("\n== new vs override ==");
+        UrgentAppointment demoUrgent = new UrgentAppointment(
+            1, 1, DateTime.Now.AddDays(4), "тест"
+        );
+        Appointment appointmentReference = demoUrgent;
+        UrgentAppointment urgentReference = demoUrgent;
+
+        // GetDescription() працює поліморфно через override.
+        // GetPriority() прихований через new, тому залежить від типу змінної.
+        // Для поліморфної роботи GetPriority() має бути virtual / override.
+        Console.WriteLine(
+            $"Через Appointment:       {appointmentReference.GetDescription()} | пріоритет {appointmentReference.GetPriority()}"
+        );
+        Console.WriteLine(
+            $"Через UrgentAppointment: {urgentReference.GetDescription()} | пріоритет {urgentReference.GetPriority()}"
+        );
 
         clinic.MedicalRecords.Add(new Diagnosis(1, 1, DateTime.Today.AddDays(-30), "I10", "Гіпертонічна хвороба", true));
         clinic.MedicalRecords.Add(new Diagnosis(1, 1, DateTime.Today.AddDays(-5), "J06.9", "Гострий ринофарингіт", false));

@@ -37,7 +37,7 @@ public class AppointmentManager
         return null;
     }
 
-    public bool Book(int patientId, int doctorId, DateTime scheduledAt, int durationMinutes = 30)
+    private bool AddAppointment(Appointment app)
     {
         if (_count >= MaxAppointments)
         {
@@ -45,30 +45,50 @@ public class AppointmentManager
             return false;
         }
 
-        Patient? p = _patients.FindById(patientId);
-        Doctor? d = _doctors.FindById(doctorId);
+        Patient? p = _patients.FindById(app.PatientId);
+        Doctor? d = _doctors.FindById(app.DoctorId);
 
         if (p == null)
         {
-            Console.WriteLine($"Помилка: пацієнта з ID {patientId} не знайдено.");
+            Console.WriteLine($"Помилка: пацієнта з ID {app.PatientId} не знайдено.");
             return false;
         }
 
         if (d == null)
         {
-            Console.WriteLine($"Помилка: лікаря з ID {doctorId} не знайдено.");
+            Console.WriteLine($"Помилка: лікаря з ID {app.DoctorId} не знайдено.");
             return false;
         }
 
-        Appointment app = new Appointment(patientId, doctorId, scheduledAt, durationMinutes);
         _appointments[_count] = app;
         _count++;
 
         Console.WriteLine(
-            $"Запис [{app.Id}] створено: {p.FullName} -> {d.FullName} о {scheduledAt:dd.MM.yyyy HH:mm}"
+            $"Запис [{app.Id}] створено: {p.FullName} -> {d.FullName} о {app.ScheduledAt:dd.MM.yyyy HH:mm}"
         );
 
         return true;
+    }
+
+    public bool Book(int patientId, int doctorId, DateTime scheduledAt, int durationMinutes = 30)
+    {
+        return AddAppointment(
+            new RegularAppointment(patientId, doctorId, scheduledAt, durationMinutes)
+        );
+    }
+
+    public bool BookUrgent(int patientId, int doctorId, DateTime scheduledAt, string urgencyNote = "", int durationMinutes = 30)
+    {
+        return AddAppointment(
+            new UrgentAppointment(patientId, doctorId, scheduledAt, urgencyNote, durationMinutes)
+        );
+    }
+
+    public bool BookSpecialist(int patientId, int doctorId, DateTime scheduledAt, string topic = "", int durationMinutes = 45)
+    {
+        return AddAppointment(
+            new SpecialistAppointment(patientId, doctorId, scheduledAt, topic, durationMinutes)
+        );
     }
 
     public bool Cancel(int id, string reason = "")
@@ -158,19 +178,19 @@ public class AppointmentManager
     }
 
     public static int CancelAll(ICancellable[] items, string reason = "")
-{
-    int cancelledCount = 0;
-
-    for (int i = 0; i < items.Length; i++)
     {
-        if (items[i].Cancel(reason))
-        {
-            cancelledCount++;
-        }
-    }
+        int cancelledCount = 0;
 
-    return cancelledCount;
-}
+        for (int i = 0; i < items.Length; i++)
+        {
+            if (items[i].Cancel(reason))
+            {
+                cancelledCount++;
+            }
+        }
+
+        return cancelledCount;
+    }
 
     public Appointment[] GetByDate(int year, int month, int day)
     {
