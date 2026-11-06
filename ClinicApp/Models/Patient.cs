@@ -1,10 +1,11 @@
 ﻿using System;
 using ClinicApp.Enums;
 using ClinicApp.Utils;
+using ClinicApp.Interfaces;
 
 namespace ClinicApp.Models;
 
-public class Patient
+public class Patient : IIdentifiable
 {
     private static int _nextId = 1;
 
@@ -86,7 +87,7 @@ public class Patient
             return age;
         }
     }
-    
+
     public bool IsAdult
     {
         get { return Age >= 18; }
@@ -100,7 +101,7 @@ public class Patient
         BloodType = bloodType;
         Phone = phone;
         Email = "";
-        
+
         Id = _nextId++;
     }
 
