@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
 using ClinicApp;
@@ -6,6 +7,7 @@ using ClinicApp.Models;
 using ClinicApp.Enums;
 using ClinicApp.Managers;
 using ClinicApp.Interfaces;
+using ClinicApp.Comparators;
 
 class Program
 {
@@ -79,6 +81,7 @@ class Program
             else if (choice == "5") BillingMenu(clinic);
             else if (choice == "6") WaitingRoomMenu(clinic);
             else if (choice == "7") clinic.GenerateReport();
+            else if (choice == "8") AnalyticsMenu(clinic);
             else if (choice == "0")
             {
                 Console.WriteLine("Роботу завершено. Навседобре!");
@@ -106,6 +109,7 @@ class Program
         PrintMainMenuLine("  5. Рахунки       — оплата, борги");
         PrintMainMenuLine("  6. Черга         — очікування, прийом");
         PrintMainMenuLine("  7. Звіт          — загальна статистика");
+        PrintMainMenuLine("  8. Аналітика     — сортування статистики");
         PrintMainMenuLine("  0. Вийти");
         Console.WriteLine("╚" + new string('═', width) + "╝");
     }
@@ -760,4 +764,116 @@ class Program
             else Console.WriteLine("Невідома команда.");
         }
     }
+
+
+    static void AnalyticsMenu(Clinic clinic)
+    {
+        while (true)
+        {
+            Console.WriteLine("\n--- Меню: Аналітика ---");
+            Console.WriteLine("1. Лікарі за навантаженням (кількість прийомів)");
+            Console.WriteLine("2. Лікарі за виручкою");
+            Console.WriteLine("3. Лікарі за іменем");
+            Console.WriteLine("4. Пацієнти за кількістю візитів");
+            Console.WriteLine("5. Пацієнти за витратами");
+            Console.WriteLine("0. Назад до головного меню");
+            Console.Write("Оберіть звіт: ");
+
+            string? choice = Console.ReadLine();
+
+            if (choice == "1")
+            {
+                List<DoctorStats> stats = CollectDoctorStats(clinic);
+                stats.Sort();
+
+                Console.WriteLine("\n--- Лікарі за навантаженням ---");
+                if (stats.Count == 0)
+                    Console.WriteLine("Немає даних для аналітики.");
+                else
+                    for (int i = 0; i < stats.Count; i++)
+                        Console.WriteLine(stats[i]);
+            }
+            else if (choice == "2")
+            {
+                List<DoctorStats> stats = CollectDoctorStats(clinic);
+                stats.Sort(new DoctorStatsByRevenue());
+
+                Console.WriteLine("\n--- Лікарі за виручкою ---");
+                if (stats.Count == 0)
+                    Console.WriteLine("Немає даних для аналітики.");
+                else
+                    for (int i = 0; i < stats.Count; i++)
+                        Console.WriteLine(stats[i]);
+            }
+            else if (choice == "3")
+            {
+                List<DoctorStats> stats = CollectDoctorStats(clinic);
+                stats.Sort(new DoctorStatsByName());
+
+                Console.WriteLine("\n--- Лікарі за іменем ---");
+                if (stats.Count == 0)
+                    Console.WriteLine("Немає даних для аналітики.");
+                else
+                    for (int i = 0; i < stats.Count; i++)
+                        Console.WriteLine(stats[i]);
+            }
+            else if (choice == "4")
+            {
+                List<PatientStats> stats = CollectPatientStats(clinic);
+                stats.Sort();
+
+                Console.WriteLine("\n--- Пацієнти за кількістю візитів ---");
+                if (stats.Count == 0)
+                    Console.WriteLine("Немає даних для аналітики.");
+                else
+                    for (int i = 0; i < stats.Count; i++)
+                        Console.WriteLine(stats[i]);
+            }
+            else if (choice == "5")
+            {
+                List<PatientStats> stats = CollectPatientStats(clinic);
+                stats.Sort(new PatientStatsBySpent());
+
+                Console.WriteLine("\n--- Пацієнти за витратами ---");
+                if (stats.Count == 0)
+                    Console.WriteLine("Немає даних для аналітики.");
+                else
+                    for (int i = 0; i < stats.Count; i++)
+                        Console.WriteLine(stats[i]);
+            }
+            else if (choice == "0")
+            {
+                break;
+            }
+            else
+            {
+                Console.WriteLine("Невідома команда. Спробуйте ще раз.");
+            }
+        }
+    }
+
+    static List<DoctorStats> CollectDoctorStats(Clinic clinic)
+    {
+        List<DoctorStats> result = new List<DoctorStats>();
+
+        foreach (DoctorStats stats in clinic.Analytics.ComputeDoctorStats())
+        {
+            result.Add(stats);
+        }
+
+        return result;
+    }
+
+    static List<PatientStats> CollectPatientStats(Clinic clinic)
+    {
+        List<PatientStats> result = new List<PatientStats>();
+
+        foreach (PatientStats stats in clinic.Analytics.ComputePatientStats())
+        {
+            result.Add(stats);
+        }
+
+        return result;
+    }
+
 }

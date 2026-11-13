@@ -1,4 +1,5 @@
-﻿using System;
+﻿
+using System;
 using ClinicApp.Managers;
 using ClinicApp.Models;
 
@@ -11,6 +12,7 @@ public class Clinic
     public PatientManager Patients { get; }
     public DoctorManager Doctors { get; }
     public AppointmentManager Appointments { get; }
+    public AnalyticsManager Analytics { get; }
     public MedicalRecordManager MedicalRecords { get; }
     public BillingManager Billing { get; }
     public WaitingQueue<Patient> WaitingRoom { get; }
@@ -22,6 +24,13 @@ public class Clinic
         Patients = new PatientManager();
         Doctors = new DoctorManager();
         Appointments = new AppointmentManager(Patients, Doctors);
+
+        Analytics = new AnalyticsManager(
+            Appointments,
+            Doctors,
+            Patients
+        );
+
         Billing = new BillingManager(Appointments);
         MedicalRecords = new MedicalRecordManager();
         WaitingRoom = new WaitingQueue<Patient>();
