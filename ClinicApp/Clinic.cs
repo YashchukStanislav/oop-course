@@ -17,6 +17,9 @@ public class Clinic
     public BillingManager Billing { get; }
     public WaitingQueue<Patient> WaitingRoom { get; }
 
+    // Менеджер планів лікування
+    public TreatmentPlanManager TreatmentPlans { get; }
+
     public Clinic(string name)
     {
         Name = name;
@@ -34,6 +37,9 @@ public class Clinic
         Billing = new BillingManager(Appointments);
         MedicalRecords = new MedicalRecordManager();
         WaitingRoom = new WaitingQueue<Patient>();
+
+        // Ініціалізація менеджера планів лікування
+        TreatmentPlans = new TreatmentPlanManager();
     }
 
     public void DisplaySchedule(DateTime date)
