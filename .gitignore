@@ -5,6 +5,9 @@ obj/
 *.suo
 .vs/
 .idea/
+reports/
+patients_test.csv
+session.dat
 
 # ОС
 .DS_Store

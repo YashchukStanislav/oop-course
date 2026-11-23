@@ -1,7 +1,7 @@
-﻿
-using System;
+﻿using System;
 using ClinicApp.Managers;
 using ClinicApp.Models;
+using ClinicApp.Utils;
 
 namespace ClinicApp;
 
@@ -17,8 +17,10 @@ public class Clinic
     public BillingManager Billing { get; }
     public WaitingQueue<Patient> WaitingRoom { get; }
 
-    // Менеджер планів лікування
     public TreatmentPlanManager TreatmentPlans { get; }
+    public ClinicLogger Logger { get; }
+    public ClinicExporter Exporter { get; }
+    public SessionManager Session { get; }
 
     public Clinic(string name)
     {
@@ -38,8 +40,10 @@ public class Clinic
         MedicalRecords = new MedicalRecordManager();
         WaitingRoom = new WaitingQueue<Patient>();
 
-        // Ініціалізація менеджера планів лікування
         TreatmentPlans = new TreatmentPlanManager();
+        Logger = new ClinicLogger();
+        Exporter = new ClinicExporter(this);
+        Session = new SessionManager();
     }
 
     public void DisplaySchedule(DateTime date)
