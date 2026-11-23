@@ -84,6 +84,7 @@ class Program
             else if (choice == "7") clinic.GenerateReport();
             else if (choice == "8") AnalyticsMenu(clinic);
             else if (choice == "9") TreatmentPlansMenu(clinic);
+            else if (choice == "10") FilesMenu(clinic);
             else if (choice == "0")
             {
                 Console.WriteLine("Роботу завершено. Навседобре!");
@@ -113,6 +114,7 @@ class Program
         PrintMainMenuLine("  7. Звіт          — загальна статистика");
         PrintMainMenuLine("  8. Аналітика     — сортування статистики");
         PrintMainMenuLine("  9. Плани лікування — рефлексія, атрибути");
+        PrintMainMenuLine(" 10. Файли         — логування та звіти");
         PrintMainMenuLine("  0. Вийти");
         Console.WriteLine("╚" + new string('═', width) + "╝");
     }
@@ -158,9 +160,19 @@ class Program
                     Console.Write("Введіть телефон (10 цифр): ");
                     string phone = Console.ReadLine() ?? "";
                     clinic.Patients.Add(new Patient(firstName, lastName, dob, bloodType, phone));
+                    clinic.Logger.LogInfo($"Додано пацієнта: {firstName} {lastName}");
+                    Console.WriteLine("Пацієнта успішно додано.");
                 }
-                catch (ArgumentOutOfRangeException e) { Console.WriteLine($"Помилка: {e.Message}"); }
-                catch (ArgumentException e) { Console.WriteLine($"Помилка: {e.Message}"); }
+                catch (ArgumentOutOfRangeException e)
+                {
+                    clinic.Logger.LogWarning($"Помилка додавання пацієнта: {e.Message}");
+                    Console.WriteLine($"Помилка: {e.Message}");
+                }
+                catch (ArgumentException e)
+                {
+                    clinic.Logger.LogWarning($"Помилка додавання пацієнта: {e.Message}");
+                    Console.WriteLine($"Помилка: {e.Message}");
+                }
             }
             else if (choice == "3")
             {
@@ -298,11 +310,21 @@ class Program
 
                         newDoctor.Schedule = new WorkSchedule(startHour, endHour);
                         clinic.Doctors.Add(newDoctor);
+                        clinic.Logger.LogInfo($"Додано лікаря: {newDoctor.FullName}");
+                        Console.WriteLine("Лікаря успішно додано.");
                     }
                     else Console.WriteLine("Помилка: невідома спеціальність. Лікаря не додано.");
                 }
-                catch (ArgumentOutOfRangeException e) { Console.WriteLine($"Помилка: {e.Message}"); }
-                catch (ArgumentException e) { Console.WriteLine($"Помилка: {e.Message}"); }
+                catch (ArgumentOutOfRangeException e)
+                {
+                    clinic.Logger.LogWarning($"Помилка додавання лікаря: {e.Message}");
+                    Console.WriteLine($"Помилка: {e.Message}");
+                }
+                catch (ArgumentException e)
+                {
+                    clinic.Logger.LogWarning($"Помилка додавання лікаря: {e.Message}");
+                    Console.WriteLine($"Помилка: {e.Message}");
+                }
             }
             else if (choice == "0") break;
             else Console.WriteLine("Невідома команда.");
@@ -363,6 +385,9 @@ class Program
                             continue;
                         }
                         clinic.Appointments.Book(pId, dId, dt, duration);
+                        clinic.Logger.LogInfo(
+                            $"Створено запис: пацієнт ID {pId}, лікар ID {dId}, дата {dt}"
+                        );
                     }
                     else Console.WriteLine("Некоректний формат дати або часу.");
                 }
@@ -373,7 +398,17 @@ class Program
             {
                 Console.Write("Введіть ID запису для його завершення: ");
                 if (int.TryParse(Console.ReadLine(), out int id))
-                    Console.WriteLine(clinic.Appointments.Complete(id) ? $"Запис [{id}] успішно переведено у статус Completed." : "Помилка: запис не знайдено або він вже не в статусі Scheduled.");
+                {
+                    if (clinic.Appointments.Complete(id))
+                    {
+                        clinic.Logger.LogInfo($"Запис ID {id} завершено.");
+                        Console.WriteLine($"Запис [{id}] успішно переведено у статус Completed.");
+                    }
+                    else
+                    {
+                        Console.WriteLine("Помилка: запис не знайдено або він вже не в статусі Scheduled.");
+                    }
+                }
                 else Console.WriteLine("Некоректний ID.");
             }
             else if (choice == "4")
@@ -383,7 +418,15 @@ class Program
                 {
                     Console.Write("Причина скасування (можна залишити порожнім): ");
                     string reason = Console.ReadLine() ?? "";
-                    Console.WriteLine(clinic.Appointments.Cancel(id, reason) ? $"Запис [{id}] скасовано." : "Помилка: запис не знайдено або він вже не в статусі Scheduled.");
+                    if (clinic.Appointments.Cancel(id, reason))
+                    {
+                        clinic.Logger.LogInfo($"Запис ID {id} скасовано. Причина: {reason}");
+                        Console.WriteLine($"Запис [{id}] скасовано.");
+                    }
+                    else
+                    {
+                        Console.WriteLine("Помилка: запис не знайдено або він вже не в статусі Scheduled.");
+                    }
                 }
                 else Console.WriteLine("Некоректний ID.");
             }
@@ -528,7 +571,10 @@ class Program
                 }
 
                 if (clinic.Billing.PayAppointment(appointmentId))
+                {
+                    clinic.Logger.LogInfo($"Оплачено запис ID {appointmentId}.");
                     Console.WriteLine($"Запис [{appointmentId}] оплачено.");
+                }
                 else
                     Console.WriteLine("Не вдалося оплатити: запис не знайдено, вже оплачено або скасовано.");
             }
@@ -768,6 +814,60 @@ class Program
         }
     }
 
+
+    static void FilesMenu(Clinic clinic)
+    {
+        while (true)
+        {
+            Console.WriteLine("\n--- Меню: Файли ---");
+            Console.WriteLine("1. Показати останні рядки лога");
+            Console.WriteLine("2. Очистити лог");
+            Console.WriteLine("0. Назад до головного меню");
+            Console.Write("Оберіть опцію: ");
+
+            string? choice = Console.ReadLine();
+
+            if (choice == "1")
+            {
+                Console.Write("Скільки останніх рядків показати? ");
+
+                if (!int.TryParse(Console.ReadLine(), out int count) || count <= 0)
+                {
+                    Console.WriteLine("Введіть додатне число.");
+                    continue;
+                }
+
+                string[] lines = clinic.Logger.GetLastLines(count);
+
+                if (lines.Length == 0)
+                {
+                    Console.WriteLine("Лог порожній або файл ще не створено.");
+                }
+                else
+                {
+                    Console.WriteLine("\n--- Останні записи лога ---");
+
+                    for (int i = 0; i < lines.Length; i++)
+                    {
+                        Console.WriteLine(lines[i]);
+                    }
+                }
+            }
+            else if (choice == "2")
+            {
+                clinic.Logger.Clear();
+                Console.WriteLine("Лог успішно очищено.");
+            }
+            else if (choice == "0")
+            {
+                break;
+            }
+            else
+            {
+                Console.WriteLine("Невідома команда.");
+            }
+        }
+    }
 
     static void AnalyticsMenu(Clinic clinic)
     {

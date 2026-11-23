@@ -2,6 +2,7 @@
 using System;
 using ClinicApp.Managers;
 using ClinicApp.Models;
+using ClinicApp.Utils;
 
 namespace ClinicApp;
 
@@ -19,6 +20,9 @@ public class Clinic
 
     // Менеджер планів лікування
     public TreatmentPlanManager TreatmentPlans { get; }
+
+    // Логер клініки
+    public ClinicLogger Logger { get; }
 
     public Clinic(string name)
     {
@@ -40,6 +44,9 @@ public class Clinic
 
         // Ініціалізація менеджера планів лікування
         TreatmentPlans = new TreatmentPlanManager();
+
+        // Ініціалізація логера
+        Logger = new ClinicLogger();
     }
 
     public void DisplaySchedule(DateTime date)
