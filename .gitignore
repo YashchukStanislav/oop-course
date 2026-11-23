@@ -5,6 +5,7 @@ obj/
 *.suo
 .vs/
 .idea/
+reports/
 
 # ОС
 .DS_Store
