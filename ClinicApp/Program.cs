@@ -69,6 +69,25 @@ class Program
         clinic.MedicalRecords.Add(new LabResult(2, 2, DateTime.Today, "Глюкоза", 5.1, "ммоль/л", "3.9-5.5", true));
         clinic.MedicalRecords.Add(new Diagnosis(3, 3, DateTime.Today, "J00", "Гострий назофарингіт", false));
 
+        if (clinic.Session.Exists())
+        {
+            Console.Write("Знайдено збережену сесію. Завантажити? (y/n): ");
+            string? answer = Console.ReadLine();
+
+            if (answer == "y")
+            {
+                try
+                {
+                    int loaded = clinic.Session.Load(clinic);
+                    Console.WriteLine($"Завантажено {loaded} пацієнтів.");
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine($"Помилка завантаження сесії: {e.Message}");
+                }
+            }
+        }
+
         while (true)
         {
             PrintMainMenu();
@@ -87,6 +106,22 @@ class Program
             else if (choice == "10") FilesMenu(clinic);
             else if (choice == "0")
             {
+                Console.Write("Зберегти сесію? (y/n): ");
+                string? answer = Console.ReadLine();
+
+                if (answer == "y")
+                {
+                    try
+                    {
+                        clinic.Session.Save(clinic);
+                        Console.WriteLine("Сесію збережено.");
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine($"Помилка збереження сесії: {e.Message}");
+                    }
+                }
+
                 Console.WriteLine("Роботу завершено. Навседобре!");
                 break;
             }
