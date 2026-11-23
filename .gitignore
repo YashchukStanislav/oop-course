@@ -7,6 +7,7 @@ obj/
 .idea/
 reports/
 patients_test.csv
+session.dat
 
 # ОС
 .DS_Store
