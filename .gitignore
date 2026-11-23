@@ -6,6 +6,7 @@ obj/
 .vs/
 .idea/
 reports/
+patients_test.csv
 
 # ОС
 .DS_Store
