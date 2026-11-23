@@ -823,6 +823,7 @@ static void FilesMenu(Clinic clinic)
         Console.WriteLine("1. Показати останні рядки лога");
         Console.WriteLine("2. Очистити лог");
         Console.WriteLine("3. Експортувати всі звіти");
+        Console.WriteLine("4. Імпорт пацієнтів з CSV");
         Console.WriteLine("0. Назад до головного меню");
         Console.Write("Оберіть опцію: ");
 
@@ -879,6 +880,16 @@ static void FilesMenu(Clinic clinic)
                 clinic.Logger.LogError($"Помилка експорту звітів: {e.Message}");
                 Console.WriteLine($"Помилка експорту: {e.Message}");
             }
+        }
+        else if (choice == "4")
+        {
+            Console.Write("Введіть шлях до CSV-файлу: ");
+            string filePath = Console.ReadLine() ?? "";
+
+            CsvImporter importer = new CsvImporter();
+            ImportResult result = importer.ImportPatients(clinic, filePath);
+
+            result.Print();
         }
         else if (choice == "0")
         {
