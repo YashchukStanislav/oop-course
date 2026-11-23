@@ -815,59 +815,81 @@ class Program
     }
 
 
-    static void FilesMenu(Clinic clinic)
+static void FilesMenu(Clinic clinic)
+{
+    while (true)
     {
-        while (true)
+        Console.WriteLine("\n--- Меню: Файли ---");
+        Console.WriteLine("1. Показати останні рядки лога");
+        Console.WriteLine("2. Очистити лог");
+        Console.WriteLine("3. Експортувати всі звіти");
+        Console.WriteLine("0. Назад до головного меню");
+        Console.Write("Оберіть опцію: ");
+
+        string? choice = Console.ReadLine();
+
+        if (choice == "1")
         {
-            Console.WriteLine("\n--- Меню: Файли ---");
-            Console.WriteLine("1. Показати останні рядки лога");
-            Console.WriteLine("2. Очистити лог");
-            Console.WriteLine("0. Назад до головного меню");
-            Console.Write("Оберіть опцію: ");
+            Console.Write("Скільки останніх рядків показати? ");
 
-            string? choice = Console.ReadLine();
-
-            if (choice == "1")
+            if (!int.TryParse(Console.ReadLine(), out int count) || count <= 0)
             {
-                Console.Write("Скільки останніх рядків показати? ");
-
-                if (!int.TryParse(Console.ReadLine(), out int count) || count <= 0)
-                {
-                    Console.WriteLine("Введіть додатне число.");
-                    continue;
-                }
-
-                string[] lines = clinic.Logger.GetLastLines(count);
-
-                if (lines.Length == 0)
-                {
-                    Console.WriteLine("Лог порожній або файл ще не створено.");
-                }
-                else
-                {
-                    Console.WriteLine("\n--- Останні записи лога ---");
-
-                    for (int i = 0; i < lines.Length; i++)
-                    {
-                        Console.WriteLine(lines[i]);
-                    }
-                }
+                Console.WriteLine("Введіть додатне число.");
+                continue;
             }
-            else if (choice == "2")
+
+            string[] lines = clinic.Logger.GetLastLines(count);
+
+            if (lines.Length == 0)
             {
-                clinic.Logger.Clear();
-                Console.WriteLine("Лог успішно очищено.");
-            }
-            else if (choice == "0")
-            {
-                break;
+                Console.WriteLine("Лог порожній або файл ще не створено.");
             }
             else
             {
-                Console.WriteLine("Невідома команда.");
+                Console.WriteLine("\n--- Останні записи лога ---");
+
+                for (int i = 0; i < lines.Length; i++)
+                {
+                    Console.WriteLine(lines[i]);
+                }
             }
         }
+        else if (choice == "2")
+        {
+            clinic.Logger.Clear();
+            Console.WriteLine("Лог успішно очищено.");
+        }
+        else if (choice == "3")
+        {
+            try
+            {
+                string[] paths = clinic.Exporter.ExportAll();
+
+                Console.WriteLine("\n--- Створені звіти ---");
+
+                for (int i = 0; i < paths.Length; i++)
+                {
+                    Console.WriteLine($"{i + 1}. {paths[i]}");
+                }
+
+                Console.WriteLine("Усі звіти успішно експортовано.");
+            }
+            catch (Exception e)
+            {
+                clinic.Logger.LogError($"Помилка експорту звітів: {e.Message}");
+                Console.WriteLine($"Помилка експорту: {e.Message}");
+            }
+        }
+        else if (choice == "0")
+        {
+            break;
+        }
+        else
+        {
+            Console.WriteLine("Невідома команда.");
+        }
     }
+}
 
     static void AnalyticsMenu(Clinic clinic)
     {
