@@ -1,6 +1,8 @@
-﻿using System;
+
+using System;
 using ClinicApp.Models;
 using ClinicApp.Interfaces;
+using ClinicApp.Events;
 
 namespace ClinicApp.Managers;
 
@@ -17,6 +19,12 @@ public class AppointmentManager
     {
         get { return _count; }
     }
+
+    // Подія успішного створення запису
+    public event EventHandler<AppointmentEventArgs>? AppointmentBooked;
+    public event EventHandler<AppointmentEventArgs>? AppointmentCancelled;
+    public event EventHandler<AppointmentEventArgs>? AppointmentCompleted;
+    public event EventHandler<AppointmentEventArgs>? UrgentAppointmentBooked;
 
     public AppointmentManager(PatientManager patientManager, DoctorManager doctorManager)
     {
@@ -67,6 +75,18 @@ public class AppointmentManager
             $"Запис [{app.Id}] створено: {p.FullName} -> {d.FullName} о {app.ScheduledAt:dd.MM.yyyy HH:mm}"
         );
 
+        // Повідомляємо підписників про успішне створення запису
+        AppointmentBooked?.Invoke(
+            this,
+            new AppointmentEventArgs(
+                app.Id,
+                app.PatientId,
+                app.DoctorId,
+                app.ScheduledAt,
+                app.Notes
+            )
+        );
+
         return true;
     }
 
@@ -79,9 +99,26 @@ public class AppointmentManager
 
     public bool BookUrgent(int patientId, int doctorId, DateTime scheduledAt, string urgencyNote = "", int durationMinutes = 30)
     {
-        return AddAppointment(
-            new UrgentAppointment(patientId, doctorId, scheduledAt, urgencyNote, durationMinutes)
-        );
+        UrgentAppointment appointment =
+            new UrgentAppointment(patientId, doctorId, scheduledAt, urgencyNote, durationMinutes);
+
+        bool success = AddAppointment(appointment);
+
+        if (success)
+        {
+            UrgentAppointmentBooked?.Invoke(
+                this,
+                new AppointmentEventArgs(
+                    appointment.Id,
+                    appointment.PatientId,
+                    appointment.DoctorId,
+                    appointment.ScheduledAt,
+                    appointment.Notes
+                )
+            );
+        }
+
+        return success;
     }
 
     public bool BookSpecialist(int patientId, int doctorId, DateTime scheduledAt, string topic = "", int durationMinutes = 45)
@@ -95,9 +132,15 @@ public class AppointmentManager
     {
         Appointment? app = FindById(id);
 
-        if (app != null)
+        if (app != null && app.Cancel(reason))
         {
-            return app.Cancel(reason);
+            AppointmentCancelled?.Invoke(
+                this,
+                new AppointmentEventArgs(
+                    app.Id, app.PatientId, app.DoctorId, app.ScheduledAt, app.Notes
+                )
+            );
+            return true;
         }
 
         return false;
@@ -120,9 +163,15 @@ public class AppointmentManager
     {
         Appointment? app = FindById(id);
 
-        if (app != null)
+        if (app != null && app.Complete())
         {
-            return app.Complete();
+            AppointmentCompleted?.Invoke(
+                this,
+                new AppointmentEventArgs(
+                    app.Id, app.PatientId, app.DoctorId, app.ScheduledAt, app.Notes
+                )
+            );
+            return true;
         }
 
         return false;
@@ -235,6 +284,33 @@ public class AppointmentManager
         }
 
         return result;
+    }
+
+    public int CancelAll(Appointment[] items, string reason = "")
+    {
+        int cancelledCount = 0;
+
+        for (int i = 0; i < items.Length; i++)
+        {
+            Appointment appointment = items[i];
+
+            if (appointment.Cancel(reason))
+            {
+                cancelledCount++;
+                AppointmentCancelled?.Invoke(
+                    this,
+                    new AppointmentEventArgs(
+                        appointment.Id,
+                        appointment.PatientId,
+                        appointment.DoctorId,
+                        appointment.ScheduledAt,
+                        appointment.Notes
+                    )
+                );
+            }
+        }
+
+        return cancelledCount;
     }
 
     public static int CancelAll(ICancellable[] items, string reason = "")
