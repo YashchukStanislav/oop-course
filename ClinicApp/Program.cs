@@ -109,6 +109,16 @@ class Program
             else if (choice == "10") FilesMenu(clinic);
             else if (choice == "0")
             {
+                clinic.Tracker.PrintSummary();
+                try
+                {
+                    clinic.Tracker.SaveSummary();
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine($"Помилка збереження підсумку сесії: {e.Message}");
+                }
+
                 Console.Write("Зберегти сесію? (y/n): ");
                 string? answer = Console.ReadLine();
 
