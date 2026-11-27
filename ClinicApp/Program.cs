@@ -9,6 +9,7 @@ using ClinicApp.Managers;
 using ClinicApp.Interfaces;
 using ClinicApp.Comparators;
 using ClinicApp.Utils;
+using ClinicApp.Events;
 
 class Program
 {
@@ -18,6 +19,8 @@ class Program
         Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
 
         Clinic clinic = new Clinic("Медична Клініка");
+
+        clinic.Appointments.AppointmentBooked += OnAppointmentBookedConsole;
 
         clinic.Patients.Add(new Patient("Іван", "Петренко", new DateTime(1985, 5, 12), BloodType.APositive, "0501234567"));
         clinic.Patients.Add(new Patient("Олена", "Коваль", new DateTime(1993, 8, 24), BloodType.BNegative, "0672345678"));
@@ -127,6 +130,13 @@ class Program
             }
             else Console.WriteLine("Невідома команда. Спробуйте ще раз.");
         }
+    }
+
+    static void OnAppointmentBookedConsole(object? sender, AppointmentEventArgs e)
+    {
+        Console.WriteLine(
+            $"[EVENT] Запис #{e.AppointmentId} створено: пацієнт #{e.PatientId} → лікар #{e.DoctorId}, {e.ScheduledAt:dd.MM.yyyy HH:mm}"
+        );
     }
 
     static void PrintMainMenu()

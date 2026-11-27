@@ -1,6 +1,8 @@
-﻿using System;
+﻿
+using System;
 using ClinicApp.Models;
 using ClinicApp.Interfaces;
+using ClinicApp.Events;
 
 namespace ClinicApp.Managers;
 
@@ -17,6 +19,9 @@ public class AppointmentManager
     {
         get { return _count; }
     }
+
+    // Подія успішного створення запису
+    public event EventHandler<AppointmentEventArgs>? AppointmentBooked;
 
     public AppointmentManager(PatientManager patientManager, DoctorManager doctorManager)
     {
@@ -65,6 +70,18 @@ public class AppointmentManager
 
         Console.WriteLine(
             $"Запис [{app.Id}] створено: {p.FullName} -> {d.FullName} о {app.ScheduledAt:dd.MM.yyyy HH:mm}"
+        );
+
+        // Повідомляємо підписників про успішне створення запису
+        AppointmentBooked?.Invoke(
+            this,
+            new AppointmentEventArgs(
+                app.Id,
+                app.PatientId,
+                app.DoctorId,
+                app.ScheduledAt,
+                app.Notes
+            )
         );
 
         return true;
