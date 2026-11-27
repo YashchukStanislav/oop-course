@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
@@ -205,7 +205,6 @@ class Program
                     Console.Write("Введіть телефон (10 цифр): ");
                     string phone = Console.ReadLine() ?? "";
                     clinic.Patients.Add(new Patient(firstName, lastName, dob, bloodType, phone));
-                    clinic.Logger.LogInfo($"Додано пацієнта: {firstName} {lastName}");
                     Console.WriteLine("Пацієнта успішно додано.");
                 }
                 catch (ArgumentOutOfRangeException e)
@@ -430,9 +429,6 @@ class Program
                             continue;
                         }
                         clinic.Appointments.Book(pId, dId, dt, duration);
-                        clinic.Logger.LogInfo(
-                            $"Створено запис: пацієнт ID {pId}, лікар ID {dId}, дата {dt}"
-                        );
                     }
                     else Console.WriteLine("Некоректний формат дати або часу.");
                 }
@@ -446,7 +442,6 @@ class Program
                 {
                     if (clinic.Appointments.Complete(id))
                     {
-                        clinic.Logger.LogInfo($"Запис ID {id} завершено.");
                         Console.WriteLine($"Запис [{id}] успішно переведено у статус Completed.");
                     }
                     else
@@ -465,7 +460,6 @@ class Program
                     string reason = Console.ReadLine() ?? "";
                     if (clinic.Appointments.Cancel(id, reason))
                     {
-                        clinic.Logger.LogInfo($"Запис ID {id} скасовано. Причина: {reason}");
                         Console.WriteLine($"Запис [{id}] скасовано.");
                     }
                     else
@@ -498,7 +492,7 @@ class Program
                 Console.Write("Причина (Enter — без причини): ");
                 string reason = Console.ReadLine() ?? "";
                 Appointment[] patientAppointments = clinic.Appointments.GetByPatient(patientId);
-                int cancelled = AppointmentManager.CancelAll(patientAppointments, reason);
+                int cancelled = clinic.Appointments.CancelAll(patientAppointments, reason);
                 Console.WriteLine($"Скасовано записів: {cancelled}");
             }
             else if (choice == "9")
@@ -617,7 +611,6 @@ class Program
 
                 if (clinic.Billing.PayAppointment(appointmentId))
                 {
-                    clinic.Logger.LogInfo($"Оплачено запис ID {appointmentId}.");
                     Console.WriteLine($"Запис [{appointmentId}] оплачено.");
                 }
                 else
@@ -1184,7 +1177,7 @@ static void FilesMenu(Clinic clinic)
         }
         else if (action == "complete")
         {
-            success = plan.Complete();
+            success = clinic.TreatmentPlans.Complete(id);
         }
         else if (action == "cancel")
         {

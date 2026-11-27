@@ -1,13 +1,16 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using ClinicApp.Models;
 using ClinicApp.Enums;
+using ClinicApp.Events;
 
 namespace ClinicApp.Managers;
 
 public class PatientManager
 {
     private List<Patient> _patients = new List<Patient>();
+
+    public event EventHandler<PatientEventArgs>? PatientAdded;
 
     public int Count
     {
@@ -17,6 +20,7 @@ public class PatientManager
     public void Add(Patient patient)
     {
         _patients.Add(patient);
+        PatientAdded?.Invoke(this, new PatientEventArgs(patient.Id, patient.FullName));
         Console.WriteLine($"Пацієнта [{patient.Id}] {patient.FullName} додано.");
     }
 
